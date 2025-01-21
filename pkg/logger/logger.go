@@ -5,12 +5,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type Logger struct {
-	ZapLogger   *zap.Logger
-	AtomicLevel zap.AtomicLevel
-}
-
-func New(level string) (*Logger, error) {
+func New(level string) (*zap.Logger, error) {
 	var zapLevel zapcore.Level
 
 	switch level {
@@ -40,5 +35,5 @@ func New(level string) (*Logger, error) {
 		return nil, err
 	}
 
-	return &Logger{ZapLogger: zapLogger, AtomicLevel: atomicLevel}, nil
+	return zapLogger, nil
 }
