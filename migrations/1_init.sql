@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS binary_data (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL
     binary_data BYTEA NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -17,7 +18,8 @@ CREATE TABLE IF NOT EXISTS binary_data (
 CREATE TABLE IF NOT EXISTS passwords (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    username VARCHAR(200),
+    app_name VARCHAR(100) NOT NULL, 
+    username VARCHAR(200) NOT NULL,
     password VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -26,6 +28,7 @@ CREATE TABLE IF NOT EXISTS passwords (
 CREATE TABLE IF NOT EXISTS cards (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    bankName VARCHAR(100),
     num VARCHAR(20) NOT NULL,
     cvv VARCHAR(4) NOT NULL,
     exp_date VARCHAR(10) NOT NULL,
