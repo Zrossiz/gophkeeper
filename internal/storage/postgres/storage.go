@@ -11,12 +11,12 @@ type Storage struct {
 	User     UserStorage
 }
 
-func New() *Storage {
+func New(conn *sql.DB) *Storage {
 	return &Storage{
-		User:     *NewUserStorage(),
-		Card:     *NewCardStorage(),
-		LogoPass: *NewLogoPassStorage(),
-		Binary:   *NewBinaryStorage(),
+		User:     *NewUserStorage(conn),
+		Card:     *NewCardStorage(conn),
+		LogoPass: *NewLogoPassStorage(conn),
+		Binary:   *NewBinaryStorage(conn),
 	}
 }
 
