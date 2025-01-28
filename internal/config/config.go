@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type Config struct {
 	DurationRefreshToken time.Duration
 	DBURI                string
 	LoggerLevel          string
+	Cost                 int
 }
 
 func New() (*Config, error) {
@@ -26,6 +28,7 @@ func New() (*Config, error) {
 	cfg.AccessSecret = getStringEnvOrDefault("ACCESS_SECRET", "access")
 	cfg.RefreshSecret = getStringEnvOrDefault("REFRESH_SECRET", "refresh")
 	cfg.LoggerLevel = getStringEnvOrDefault("LOGGER_LEVEL", "DEBUG")
+	cfg.Cost = getIntEnvOrDefault("COST", 3)
 
 	durationAccessSecret := getStringEnvOrDefault("DURATION_ACCESS", "24h")
 	parsedDurationAccess, err := time.ParseDuration(durationAccessSecret)
@@ -51,4 +54,15 @@ func getStringEnvOrDefault(envName string, defaultValue string) string {
 	}
 
 	return defaultValue
+}
+
+func getIntEnvOrDefault(envName string, defaultValue int) int {
+	envValue := os.Getenv(envName)
+	intValue, err := strconv.Atoi(envValue)
+	if err != nil {
+		fmt.Printf("error parsing %v, %v\n", envValue, err)
+		return defaultValue
+	}
+
+	return intValue
 }
