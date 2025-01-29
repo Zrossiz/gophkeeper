@@ -8,6 +8,7 @@ import (
 	"github.com/Zrossiz/gophkeeper/internal/service"
 	"github.com/Zrossiz/gophkeeper/internal/storage/postgres"
 	"github.com/Zrossiz/gophkeeper/internal/transport/http/handler"
+	"github.com/Zrossiz/gophkeeper/internal/transport/http/middleware"
 	"github.com/Zrossiz/gophkeeper/internal/transport/http/router"
 	"github.com/Zrossiz/gophkeeper/pkg/logger"
 	_ "github.com/lib/pq"
@@ -31,6 +32,8 @@ func Start() {
 	}
 	defer dbConn.Close()
 
+	authMiddleware := middleware.New(*cfg, log)
+
 	dbStore := postgres.New(dbConn)
 	serv := service.New(service.Storage{
 		Card:     &dbStore.Card,
@@ -51,7 +54,7 @@ func Start() {
 		User:     &handler.User,
 		Binary:   &handler.Binary,
 		LogoPass: &handler.LogoPass,
-	})
+	}, authMiddleware)
 
 	srv := &http.Server{
 		Addr:    cfg.ServerAddress,

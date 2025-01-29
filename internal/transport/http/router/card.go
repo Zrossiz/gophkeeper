@@ -8,6 +8,7 @@ import (
 
 type CardRouter struct {
 	h CardHandler
+	m Middleware
 }
 
 type CardHandler interface {
@@ -16,9 +17,13 @@ type CardHandler interface {
 	Create(rw http.ResponseWriter, r *http.Request)
 }
 
-func NewCardRouter(h CardHandler) *CardRouter {
+func NewCardRouter(
+	h CardHandler,
+	m Middleware,
+) *CardRouter {
 	return &CardRouter{
 		h: h,
+		m: m,
 	}
 }
 

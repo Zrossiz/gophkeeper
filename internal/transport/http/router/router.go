@@ -1,6 +1,10 @@
 package router
 
-import "github.com/go-chi/chi/v5"
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
 
 type Router struct {
 	Card     CardRouter
@@ -16,14 +20,21 @@ type Handler struct {
 	LogoPass LogoPassHandler
 }
 
-func New(h Handler) *chi.Mux {
+type Middleware interface {
+	Auth(next http.Handler) http.Handler
+}
+
+func New(
+	h Handler,
+	m Middleware,
+) *chi.Mux {
 	r := chi.NewRouter()
 
 	router := &Router{
-		Card:     *NewCardRouter(h.Card),
+		Card:     *NewCardRouter(h.Card, m),
 		User:     *NewUserRouter(h.User),
-		Binary:   *NewBinaryRouter(h.Binary),
-		LogoPass: *NewLogoPassRouter(h.LogoPass),
+		Binary:   *NewBinaryRouter(h.Binary, m),
+		LogoPass: *NewLogoPassRouter(h.LogoPass, m),
 	}
 
 	router.User.RegisterRoutes(r)

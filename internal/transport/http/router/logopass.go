@@ -8,6 +8,7 @@ import (
 
 type LogoPassRouter struct {
 	h LogoPassHandler
+	m Middleware
 }
 
 type LogoPassHandler interface {
@@ -16,9 +17,13 @@ type LogoPassHandler interface {
 	Create(rw http.ResponseWriter, r *http.Request)
 }
 
-func NewLogoPassRouter(h LogoPassHandler) *LogoPassRouter {
+func NewLogoPassRouter(
+	h LogoPassHandler,
+	m Middleware,
+) *LogoPassRouter {
 	return &LogoPassRouter{
 		h: h,
+		m: m,
 	}
 }
 

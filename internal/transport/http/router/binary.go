@@ -8,6 +8,7 @@ import (
 
 type BinaryRouter struct {
 	h BinaryHandler
+	m Middleware
 }
 
 type BinaryHandler interface {
@@ -16,9 +17,13 @@ type BinaryHandler interface {
 	Create(rw http.ResponseWriter, r *http.Request)
 }
 
-func NewBinaryRouter(h BinaryHandler) *BinaryRouter {
+func NewBinaryRouter(
+	h BinaryHandler,
+	m Middleware,
+) *BinaryRouter {
 	return &BinaryRouter{
 		h: h,
+		m: m,
 	}
 }
 
