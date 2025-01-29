@@ -7,8 +7,9 @@ import (
 )
 
 type LogoPassService struct {
-	logoPassDB LogoPassStorage
-	log        *zap.Logger
+	logoPassDB   LogoPassStorage
+	cryptoModule CryptoModule
+	log          *zap.Logger
 }
 
 type LogoPassStorage interface {
@@ -19,11 +20,13 @@ type LogoPassStorage interface {
 
 func NewLogoPassService(
 	logoPassDB LogoPassStorage,
+	cryptoModule CryptoModule,
 	log *zap.Logger,
 ) *LogoPassService {
 	return &LogoPassService{
-		logoPassDB: logoPassDB,
-		log:        log,
+		logoPassDB:   logoPassDB,
+		cryptoModule: cryptoModule,
+		log:          log,
 	}
 }
 

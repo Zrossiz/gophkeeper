@@ -7,8 +7,9 @@ import (
 )
 
 type CardService struct {
-	cardStorage CardStorage
-	log         *zap.Logger
+	cardStorage  CardStorage
+	cryptoModule CryptoModule
+	log          *zap.Logger
 }
 
 type CardStorage interface {
@@ -17,10 +18,15 @@ type CardStorage interface {
 	UpdateCard(cardID int64, body dto.UpdateCardDTO) error
 }
 
-func NewCardService(cardStorage CardStorage, log *zap.Logger) *CardService {
+func NewCardService(
+	cardStorage CardStorage,
+	cryptoModule CryptoModule,
+	log *zap.Logger,
+) *CardService {
 	return &CardService{
-		cardStorage: cardStorage,
-		log:         log,
+		cardStorage:  cardStorage,
+		cryptoModule: cryptoModule,
+		log:          log,
 	}
 }
 

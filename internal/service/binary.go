@@ -8,6 +8,7 @@ import (
 
 type BinaryService struct {
 	binaryStorage BinaryStorage
+	cryptoModule  CryptoModule
 	log           *zap.Logger
 }
 
@@ -17,9 +18,14 @@ type BinaryStorage interface {
 	GetAllByUser(userID int64) ([]entities.BinaryData, error)
 }
 
-func NewBinaryService(binaryStorage BinaryStorage, logger *zap.Logger) *BinaryService {
+func NewBinaryService(
+	binaryStorage BinaryStorage,
+	cryptoModule CryptoModule,
+	logger *zap.Logger,
+) *BinaryService {
 	return &BinaryService{
 		binaryStorage: binaryStorage,
+		cryptoModule:  cryptoModule,
 		log:           logger,
 	}
 }

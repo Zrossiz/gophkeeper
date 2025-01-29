@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Zrossiz/gophkeeper/internal/config"
+	"github.com/Zrossiz/gophkeeper/internal/cryptox"
 	"github.com/Zrossiz/gophkeeper/internal/service"
 	"github.com/Zrossiz/gophkeeper/internal/storage/postgres"
 	"github.com/Zrossiz/gophkeeper/internal/transport/http/handler"
@@ -33,6 +34,7 @@ func Start() {
 	defer dbConn.Close()
 
 	authMiddleware := middleware.New(*cfg, log)
+	cryptoModule := cryptox.NewCryproModule()
 
 	dbStore := postgres.New(dbConn)
 	serv := service.New(service.Storage{
@@ -40,7 +42,7 @@ func Start() {
 		User:     &dbStore.User,
 		Binary:   &dbStore.Binary,
 		LogoPass: &dbStore.LogoPass,
-	}, *cfg, log)
+	}, *cfg, cryptoModule, log)
 
 	handler := handler.New(handler.Service{
 		Card:     &serv.Card,

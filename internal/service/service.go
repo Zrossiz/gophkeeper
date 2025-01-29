@@ -19,15 +19,21 @@ type Storage struct {
 	Card     CardStorage
 }
 
+type CryptoModule interface {
+	Encrypt(plaintext, key string) (string, error)
+	Decrypt(encryptedText, key string) (string, error)
+}
+
 func New(
 	store Storage,
 	cfg config.Config,
+	cryptoModule CryptoModule,
 	logger *zap.Logger,
 ) *Service {
 	return &Service{
 		User:     *NewUserService(store.User, cfg, logger),
-		Binary:   *NewBinaryService(store.Binary, logger),
-		Card:     *NewCardService(store.Card, logger),
-		LogoPass: *NewLogoPassService(store.LogoPass, logger),
+		Binary:   *NewBinaryService(store.Binary, cryptoModule, logger),
+		Card:     *NewCardService(store.Card, cryptoModule, logger),
+		LogoPass: *NewLogoPassService(store.LogoPass, cryptoModule, logger),
 	}
 }
