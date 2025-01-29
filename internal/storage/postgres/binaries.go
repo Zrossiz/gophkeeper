@@ -17,25 +17,25 @@ func NewBinaryStorage(db *sql.DB) *BinaryStorage {
 	return &BinaryStorage{db: db}
 }
 
-func (b *BinaryStorage) Create(body dto.CreateBinaryDTO) error {
+func (b *BinaryStorage) Create(body dto.SetStorageBinaryDTO) error {
 	query := `
 		INSERT INTO binary_data (user_id, title, binary_data, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5)
 	`
-	_, err := b.db.Exec(query, body.UserId, body.Title, body.Data, time.Now(), time.Now())
+	_, err := b.db.Exec(query, body.UserID, body.Title, body.Data, time.Now(), time.Now())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b *BinaryStorage) Update(id int64, body dto.UpdateBinaryDTO) error {
+func (b *BinaryStorage) Update(body dto.SetStorageBinaryDTO) error {
 	query := `
 		UPDATE binary_data
 		SET binary_data = $1, updated_at = $2
 		WHERE id = $3
 	`
-	result, err := b.db.Exec(query, body.Data, time.Now(), id)
+	result, err := b.db.Exec(query, body.Data, time.Now(), body.UserID)
 	if err != nil {
 		return err
 	}

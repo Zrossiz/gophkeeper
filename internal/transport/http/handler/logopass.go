@@ -56,14 +56,14 @@ func (l *LogoPassHandler) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := chi.URLParam(r, "userID")
-	intUserID, err := strconv.Atoi(userID)
+	logoPassID := chi.URLParam(r, "logoPassID")
+	intLogoPassID, err := strconv.Atoi(logoPassID)
 	if err != nil {
-		http.Error(rw, "invalid user id ", http.StatusBadRequest)
+		http.Error(rw, "invalid logo pass id ", http.StatusBadRequest)
 		return
 	}
 
-	err = l.service.Update(int64(intUserID), body)
+	err = l.service.Update(int64(intLogoPassID), body)
 	if err != nil {
 		l.log.Sugar().Errorf("update logo pass error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)

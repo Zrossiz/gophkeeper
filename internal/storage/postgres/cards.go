@@ -16,7 +16,7 @@ func NewCardStorage(db *sql.DB) *CardStorage {
 }
 
 func (c *CardStorage) CreateCard(body dto.CreateCardDTO) error {
-	query := `INSERT INTO cards (user_id, bankName, num, cvv, exp_date) VALUES ($1, $2, $3, $4)`
+	query := `INSERT INTO cards (user_id, bankName, num, cvv, exp_date) VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := c.db.Exec(query, body.UserID, body.BankName, body.Num, body.CVV, body.ExpDate)
 	if err != nil {

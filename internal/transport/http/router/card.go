@@ -23,9 +23,9 @@ func NewCardRouter(h CardHandler) *CardRouter {
 }
 
 func (c *CardRouter) RegisterRoutes(r chi.Router) {
-	r.Route("/card", func(r chi.Router) {
+	r.Route("/api/card", func(r chi.Router) {
 		r.Post("/", c.h.Create)
 		r.Get("/", c.h.GetAll)
-		r.Put("/{id}", c.h.Update)
+		r.Put("/{cardID}", c.h.Update)
 	})
 }

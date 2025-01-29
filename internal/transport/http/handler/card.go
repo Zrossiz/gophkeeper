@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,6 +35,7 @@ func (c *CardHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	var body dto.CreateCardDTO
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(rw, apperrors.ErrInvalidRequestBody, http.StatusBadRequest)
 		return
 	}
@@ -56,14 +58,14 @@ func (c *CardHandler) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := chi.URLParam(r, "userID")
-	intUserID, err := strconv.Atoi(userID)
+	cardID := chi.URLParam(r, "cardID")
+	intCardID, err := strconv.Atoi(cardID)
 	if err != nil {
 		http.Error(rw, "invalid user id ", http.StatusBadRequest)
 		return
 	}
 
-	err = c.service.Update(int64(intUserID), body)
+	err = c.service.Update(int64(intCardID), body)
 	if err != nil {
 		c.log.Sugar().Errorf("update card error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)

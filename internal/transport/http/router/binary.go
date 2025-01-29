@@ -23,9 +23,9 @@ func NewBinaryRouter(h BinaryHandler) *BinaryRouter {
 }
 
 func (b *BinaryRouter) RegisterRoutes(r chi.Router) {
-	r.Route("/binary", func(r chi.Router) {
+	r.Route("/api/binary", func(r chi.Router) {
 		r.Post("/", b.h.Create)
 		r.Get("/", b.h.GetAll)
-		r.Put("/{id}", b.h.Update)
+		r.Put("/{binaryID}", b.h.Update)
 	})
 }

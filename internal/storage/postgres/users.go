@@ -14,7 +14,9 @@ type UserStorage struct {
 }
 
 func NewUserStorage(db *sql.DB) *UserStorage {
-	return &UserStorage{}
+	return &UserStorage{
+		db: db,
+	}
 }
 
 func (u *UserStorage) Create(body dto.UserDTO) error {

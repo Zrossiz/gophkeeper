@@ -12,8 +12,8 @@ type BinaryService struct {
 }
 
 type BinaryStorage interface {
-	Create(body dto.CreateBinaryDTO) error
-	Update(id int64, body dto.UpdateBinaryDTO) error
+	Create(body dto.SetStorageBinaryDTO) error
+	Update(body dto.SetStorageBinaryDTO) error
 	GetAllByUser(userID int64) ([]entities.BinaryData, error)
 }
 
@@ -25,11 +25,21 @@ func NewBinaryService(binaryStorage BinaryStorage, logger *zap.Logger) *BinarySe
 }
 
 func (b *BinaryService) Create(body dto.CreateBinaryDTO) error {
-	return b.binaryStorage.Create(body)
+	binariesBody := dto.SetStorageBinaryDTO{
+		UserID: body.UserId,
+		Title:  body.Title,
+		Data:   []byte(body.Data),
+	}
+	return b.binaryStorage.Create(binariesBody)
 }
 
-func (b *BinaryService) Update(userID int64, body dto.UpdateBinaryDTO) error {
-	return b.binaryStorage.Update(userID, body)
+func (b *BinaryService) Update(userID int, body dto.UpdateBinaryDTO) error {
+	binariesBody := dto.SetStorageBinaryDTO{
+		UserID: userID,
+		Title:  body.Title,
+		Data:   []byte(body.Data),
+	}
+	return b.binaryStorage.Update(binariesBody)
 }
 
 func (b *BinaryService) GetAll(userID int64) ([]entities.BinaryData, error) {

@@ -24,7 +24,7 @@ func New() (*Config, error) {
 
 	cfg.BffAddress = getStringEnvOrDefault("BFF_ADDRESS", "localhost:9000")
 	cfg.ServerAddress = getStringEnvOrDefault("SERVER_ADDRESS", "localhost:8080")
-	cfg.DBURI = getStringEnvOrDefault("DB_URI", "host=localhost port=5432 user=postgres password=root dbname=gophkeerper sslmode=disable")
+	cfg.DBURI = getStringEnvOrDefault("DB_URI", "host=localhost port=5432 user=postgres password=root dbname=gophkeeper sslmode=disable")
 	cfg.AccessSecret = getStringEnvOrDefault("ACCESS_SECRET", "access")
 	cfg.RefreshSecret = getStringEnvOrDefault("REFRESH_SECRET", "refresh")
 	cfg.LoggerLevel = getStringEnvOrDefault("LOGGER_LEVEL", "DEBUG")

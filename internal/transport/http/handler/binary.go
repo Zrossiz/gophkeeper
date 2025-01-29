@@ -19,7 +19,7 @@ type BinaryHandler struct {
 
 type BinaryService interface {
 	Create(body dto.CreateBinaryDTO) error
-	Update(userID int64, body dto.UpdateBinaryDTO) error
+	Update(userID int, body dto.UpdateBinaryDTO) error
 	GetAll(userID int64) ([]entities.BinaryData, error)
 }
 
@@ -56,14 +56,14 @@ func (b *BinaryHandler) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := chi.URLParam(r, "userID")
-	intUserID, err := strconv.Atoi(userID)
+	binaryID := chi.URLParam(r, "binaryID")
+	intBinaryID, err := strconv.Atoi(binaryID)
 	if err != nil {
 		http.Error(rw, "invalid user id ", http.StatusBadRequest)
 		return
 	}
 
-	err = b.service.Update(int64(intUserID), body)
+	err = b.service.Update(intBinaryID, body)
 	if err != nil {
 		b.log.Sugar().Errorf("update binary error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)

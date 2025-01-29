@@ -20,7 +20,7 @@ func NewUserRouter(h UserHandler) *UserRouter {
 }
 
 func (u *UserRouter) RegisterRoutes(r chi.Router) {
-	r.Route("/user", func(r chi.Router) {
+	r.Route("/api/user", func(r chi.Router) {
 		r.Post(("/register"), u.handler.Registration)
 		r.Post("/login", u.handler.Login)
 	})

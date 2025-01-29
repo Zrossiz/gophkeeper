@@ -80,7 +80,7 @@ func (u *UserHandler) Registration(rw http.ResponseWriter, r *http.Request) {
 	http.SetCookie(rw, &refreshTokenCokie)
 	http.SetCookie(rw, &accessTokenCookie)
 	response := map[string]string{
-		"message": "registration successful",
+		"hash": generatedJwt.Hash,
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
@@ -146,7 +146,7 @@ func (u *UserHandler) Login(rw http.ResponseWriter, r *http.Request) {
 	http.SetCookie(rw, &refreshTokenCookie)
 	http.SetCookie(rw, &accessTokenCookie)
 	response := map[string]string{
-		"message": "login successful",
+		"hash": generatedJwt.Hash,
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
