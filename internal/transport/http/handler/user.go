@@ -16,8 +16,8 @@ type UserHandler struct {
 }
 
 type UserService interface {
-	Registration(registrationDTO dto.UserDTO) (dto.GeneratedJwt, error)
-	Login(loginDTO dto.UserDTO) (dto.GeneratedJwt, error)
+	Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error)
+	Login(loginDTO dto.UserDTO) (*dto.GeneratedJwt, error)
 }
 
 func NewUserHandler(serv UserService, log *zap.Logger) *UserHandler {

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -20,6 +21,10 @@ type GenerateJWTProps struct {
 }
 
 func GenerateJWT(props GenerateJWTProps) (string, error) {
+	if len(props.Secret) == 0 {
+		return "", fmt.Errorf("secret key cannot be empty")
+	}
+
 	claims := &CustomClaims{
 		UserID:   props.UserID,
 		Username: props.Username,

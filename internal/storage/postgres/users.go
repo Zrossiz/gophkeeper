@@ -17,7 +17,7 @@ func NewUserStorage(db *sql.DB) *UserStorage {
 	return &UserStorage{}
 }
 
-func (u *UserStorage) Create(body dto.CreateUserDTO) error {
+func (u *UserStorage) Create(body dto.UserDTO) error {
 	query := `INSERT INTO users (username, password) VALUES ($1, $2)`
 	_, err := u.db.Exec(query, body.Username, body.Password)
 	if err != nil {

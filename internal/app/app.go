@@ -10,6 +10,7 @@ import (
 	"github.com/Zrossiz/gophkeeper/internal/transport/http/handler"
 	"github.com/Zrossiz/gophkeeper/internal/transport/http/router"
 	"github.com/Zrossiz/gophkeeper/pkg/logger"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
@@ -46,10 +47,10 @@ func Start() {
 	}, log)
 
 	router := router.New(router.Handler{
-		Card:     handler.Card,
-		User:     handler.User,
-		Binary:   handler.Binary,
-		LogoPass: handler.LogoPass,
+		Card:     &handler.Card,
+		User:     &handler.User,
+		Binary:   &handler.Binary,
+		LogoPass: &handler.LogoPass,
 	})
 
 	srv := &http.Server{

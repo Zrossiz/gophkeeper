@@ -24,7 +24,7 @@ func New() (*Config, error) {
 
 	cfg.BffAddress = getStringEnvOrDefault("BFF_ADDRESS", "localhost:9000")
 	cfg.ServerAddress = getStringEnvOrDefault("SERVER_ADDRESS", "localhost:8080")
-	cfg.DBURI = getStringEnvOrDefault("DB_URI", "postgres://postgres:root@db:5432/gophkeeper")
+	cfg.DBURI = getStringEnvOrDefault("DB_URI", "host=localhost port=5432 user=postgres password=root dbname=gophkeerper sslmode=disable")
 	cfg.AccessSecret = getStringEnvOrDefault("ACCESS_SECRET", "access")
 	cfg.RefreshSecret = getStringEnvOrDefault("REFRESH_SECRET", "refresh")
 	cfg.LoggerLevel = getStringEnvOrDefault("LOGGER_LEVEL", "DEBUG")
@@ -58,6 +58,10 @@ func getStringEnvOrDefault(envName string, defaultValue string) string {
 
 func getIntEnvOrDefault(envName string, defaultValue int) int {
 	envValue := os.Getenv(envName)
+	if envValue == "" {
+		return defaultValue
+	}
+
 	intValue, err := strconv.Atoi(envValue)
 	if err != nil {
 		fmt.Printf("error parsing %v, %v\n", envValue, err)
