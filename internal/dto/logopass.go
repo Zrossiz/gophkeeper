@@ -5,9 +5,11 @@ type CreateLogoPassDTO struct {
 	AppName  string `json:"app_name"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Key      string
 }
 
 type UpdateLogoPassDTO struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Key      string
 }

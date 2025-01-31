@@ -11,6 +11,7 @@ type Router struct {
 	User     UserRouter
 	Binary   BinaryRouter
 	LogoPass LogoPassRouter
+	Note     NoteRouter
 }
 
 type Handler struct {
@@ -18,6 +19,7 @@ type Handler struct {
 	Card     CardHandler
 	Binary   BinaryHandler
 	LogoPass LogoPassHandler
+	Note     NoteHandler
 }
 
 type Middleware interface {
@@ -35,12 +37,14 @@ func New(
 		User:     *NewUserRouter(h.User),
 		Binary:   *NewBinaryRouter(h.Binary, m),
 		LogoPass: *NewLogoPassRouter(h.LogoPass, m),
+		Note:     *NewNoteRouter(h.Note, m),
 	}
 
 	router.User.RegisterRoutes(r)
 	router.Card.RegisterRoutes(r)
 	router.LogoPass.RegisterRoutes(r)
 	router.Binary.RegisterRoutes(r)
+	router.Note.RegisterRoutes(r)
 
 	return r
 }

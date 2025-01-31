@@ -77,8 +77,18 @@ func (u *UserHandler) Registration(rw http.ResponseWriter, r *http.Request) {
 		Secure:   false,
 	}
 
+	keyCookie := http.Cookie{
+		Name:     "key",
+		Value:    generatedJwt.Hash,
+		Path:     "/",
+		Expires:  time.Now().Add(10000 * time.Hour),
+		HttpOnly: true,
+		Secure:   false,
+	}
+
 	http.SetCookie(rw, &refreshTokenCokie)
 	http.SetCookie(rw, &accessTokenCookie)
+	http.SetCookie(rw, &keyCookie)
 	response := map[string]string{
 		"hash": generatedJwt.Hash,
 	}
@@ -143,8 +153,18 @@ func (u *UserHandler) Login(rw http.ResponseWriter, r *http.Request) {
 		Secure:   false,
 	}
 
+	keyCookie := http.Cookie{
+		Name:     "key",
+		Value:    generatedJwt.Hash,
+		Path:     "/",
+		Expires:  time.Now().Add(10000 * time.Hour),
+		HttpOnly: true,
+		Secure:   false,
+	}
+
 	http.SetCookie(rw, &refreshTokenCookie)
 	http.SetCookie(rw, &accessTokenCookie)
+	http.SetCookie(rw, &keyCookie)
 	response := map[string]string{
 		"hash": generatedJwt.Hash,
 	}

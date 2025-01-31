@@ -29,8 +29,8 @@ func NewLogoPassRouter(
 
 func (c *LogoPassRouter) RegisterRoutes(r chi.Router) {
 	r.Route("/api/logo-pass", func(r chi.Router) {
-		r.Post("/", c.h.Create)
-		r.Get("/", c.h.GetAll)
-		r.Put("/{logoPassID}", c.h.Update)
+		r.With(c.m.Auth).Post("/", c.h.Create)
+		r.With(c.m.Auth).Get("/", c.h.GetAll)
+		r.With(c.m.Auth).Put("/{logoPassID}", c.h.Update)
 	})
 }

@@ -7,6 +7,7 @@ type Handler struct {
 	LogoPass LogoPassHandler
 	Binary   BinaryHandler
 	Card     CardHandler
+	Note     NoteHandler
 }
 
 type Service struct {
@@ -14,6 +15,7 @@ type Service struct {
 	Card     CardService
 	Binary   BinaryService
 	LogoPass LogoPassService
+	Note     NoteService
 }
 
 func New(serv Service, logger *zap.Logger) *Handler {
@@ -22,5 +24,6 @@ func New(serv Service, logger *zap.Logger) *Handler {
 		Binary:   *NewBinaryHandler(serv.Binary, logger),
 		Card:     *NewCardHandler(serv.Card, logger),
 		LogoPass: *NewLogoPassHandler(serv.LogoPass, logger),
+		Note:     *NewNoteHandler(serv.Note, logger),
 	}
 }

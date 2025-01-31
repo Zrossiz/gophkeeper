@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"io"
@@ -69,6 +70,14 @@ func (c *CryptoModule) Decrypt(encryptedText, key string) (string, error) {
 	}
 
 	return string(plaintext), nil
+}
+
+func (c *CryptoModule) GenerateSecretPhrase(txt string) string {
+	hash := sha256.Sum256([]byte(txt))
+
+	encoded := base64.StdEncoding.EncodeToString(hash[:])
+
+	return encoded[:14]
 }
 
 func (c *CryptoModule) deriveKey(password string) []byte {

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,75 +12,74 @@ import (
 	"go.uber.org/zap"
 )
 
-type CardHandler struct {
-	service CardService
+type NoteHandler struct {
+	service NoteService
 	log     *zap.Logger
 }
 
-type CardService interface {
-	Create(body dto.CreateCardDTO) error
-	Update(cardID int64, body dto.UpdateCardDTO) error
-	GetAll(userID int64, key string) ([]entities.Card, error)
+type NoteService interface {
+	Create(body dto.CreateNoteDTO) error
+	Update(noteID int, body dto.UpdateNoteDTO) error
+	GetAll(userID int, key string) ([]entities.Note, error)
 }
 
-func NewCardHandler(service CardService, logger *zap.Logger) *CardHandler {
-	return &CardHandler{
+func NewNoteHandler(service NoteService, log *zap.Logger) *NoteHandler {
+	return &NoteHandler{
 		service: service,
-		log:     logger,
+		log:     log,
 	}
 }
 
-func (c *CardHandler) Create(rw http.ResponseWriter, r *http.Request) {
+func (n *NoteHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	key, err := r.Cookie("key")
 	if err != nil {
 		http.Error(rw, "key not found", http.StatusBadRequest)
 		return
 	}
 
-	var body dto.CreateCardDTO
+	var body dto.CreateNoteDTO
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(rw, apperrors.ErrInvalidRequestBody, http.StatusBadRequest)
 		return
 	}
+
 	body.Key = key.Value
 
-	err = c.service.Create(body)
+	err = n.service.Create(body)
 	if err != nil {
-		c.log.Sugar().Errorf("create card error: %v", err)
-		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
-		return
+		n.log.Sugar().Errorf("create note error: %v", err)
 	}
 
 	rw.WriteHeader(http.StatusCreated)
 }
 
-func (c *CardHandler) Update(rw http.ResponseWriter, r *http.Request) {
+func (n *NoteHandler) Update(rw http.ResponseWriter, r *http.Request) {
+	noteID := chi.URLParam(r, "noteID")
+	intNoteID, err := strconv.Atoi(noteID)
+	if err != nil {
+		http.Error(rw, "invalid note id ", http.StatusBadRequest)
+		return
+	}
+
 	key, err := r.Cookie("key")
 	if err != nil {
 		http.Error(rw, "key not found", http.StatusBadRequest)
 		return
 	}
 
-	var body dto.UpdateCardDTO
+	var body dto.UpdateNoteDTO
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		http.Error(rw, apperrors.ErrInvalidRequestBody, http.StatusBadRequest)
 		return
 	}
+
 	body.Key = key.Value
 
-	cardID := chi.URLParam(r, "cardID")
-	intCardID, err := strconv.Atoi(cardID)
+	err = n.service.Update(intNoteID, body)
 	if err != nil {
-		http.Error(rw, "invalid user id ", http.StatusBadRequest)
-		return
-	}
-
-	err = c.service.Update(int64(intCardID), body)
-	if err != nil {
-		c.log.Sugar().Errorf("update card error: %v", err)
+		n.log.Sugar().Errorf("update note id error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
 		return
 	}
@@ -89,7 +87,7 @@ func (c *CardHandler) Update(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 }
 
-func (c *CardHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
+func (n *NoteHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 	key, err := r.Cookie("key")
 	if err != nil {
 		http.Error(rw, "key not found", http.StatusBadRequest)
@@ -103,9 +101,9 @@ func (c *CardHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	items, err := c.service.GetAll(int64(intUserID), key.Value)
+	items, err := n.service.GetAll(intUserID, key.Value)
 	if err != nil {
-		c.log.Sugar().Errorf("get all cards error: %v", err)
+		n.log.Sugar().Errorf("get all notes error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
 		return
 	}
