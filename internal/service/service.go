@@ -10,6 +10,7 @@ type Service struct {
 	LogoPass LogoPassService
 	Binary   BinaryService
 	Card     CardService
+	Note     NoteService
 }
 
 type Storage struct {
@@ -17,11 +18,13 @@ type Storage struct {
 	User     UserStorage
 	LogoPass LogoPassStorage
 	Card     CardStorage
+	Note     NoteStorage
 }
 
 type CryptoModule interface {
 	Encrypt(plaintext, key string) (string, error)
 	Decrypt(encryptedText, key string) (string, error)
+	GenerateSecretPhrase(txt string) string
 }
 
 func New(
@@ -31,9 +34,10 @@ func New(
 	logger *zap.Logger,
 ) *Service {
 	return &Service{
-		User:     *NewUserService(store.User, cfg, logger),
+		User:     *NewUserService(store.User, cryptoModule, cfg, logger),
 		Binary:   *NewBinaryService(store.Binary, cryptoModule, logger),
 		Card:     *NewCardService(store.Card, cryptoModule, logger),
 		LogoPass: *NewLogoPassService(store.LogoPass, cryptoModule, logger),
+		Note:     *NewNoteService(store.Note, cryptoModule, logger),
 	}
 }

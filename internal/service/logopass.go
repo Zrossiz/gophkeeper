@@ -31,7 +31,20 @@ func NewLogoPassService(
 }
 
 func (l *LogoPassService) Create(body dto.CreateLogoPassDTO) error {
-	err := l.logoPassDB.CreateLogoPass(body)
+	encryptedUsername, err := l.cryptoModule.Encrypt(body.Username, body.Key)
+	if err != nil {
+		return err
+	}
+
+	encryptedPassword, err := l.cryptoModule.Encrypt(body.Password, body.Key)
+	if err != nil {
+		return err
+	}
+
+	body.Username = encryptedUsername
+	body.Password = encryptedPassword
+
+	err = l.logoPassDB.CreateLogoPass(body)
 	if err != nil {
 		return err
 	}
@@ -40,7 +53,20 @@ func (l *LogoPassService) Create(body dto.CreateLogoPassDTO) error {
 }
 
 func (l *LogoPassService) Update(userID int64, body dto.UpdateLogoPassDTO) error {
-	err := l.logoPassDB.UpdateLogoPass(userID, body)
+	encryptedUsername, err := l.cryptoModule.Encrypt(body.Username, body.Key)
+	if err != nil {
+		return err
+	}
+
+	encryptedPassword, err := l.cryptoModule.Encrypt(body.Password, body.Key)
+	if err != nil {
+		return err
+	}
+
+	body.Username = encryptedUsername
+	body.Password = encryptedPassword
+
+	err = l.logoPassDB.UpdateLogoPass(userID, body)
 	if err != nil {
 		return err
 	}
@@ -48,11 +74,51 @@ func (l *LogoPassService) Update(userID int64, body dto.UpdateLogoPassDTO) error
 	return nil
 }
 
-func (l *LogoPassService) GetAll(userID int64) ([]entities.LogoPassword, error) {
+func (l *LogoPassService) GetAll(userID int64, key string) ([]entities.LogoPassword, error) {
 	items, err := l.logoPassDB.GetAllByUser(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return items, nil
+	decryptedData := l.decryptLogoPassArray(items, key)
+
+	return decryptedData, nil
+}
+
+func (l *LogoPassService) decryptLogoPassArray(
+	encryptedData []entities.LogoPassword,
+	key string,
+) []entities.LogoPassword {
+	decryptedData := make([]entities.LogoPassword, 0, len(encryptedData))
+
+	for i := 0; i < len(encryptedData); i++ {
+		decryptedItem, err := l.decryptLogoPass(decryptedData[i], key)
+		if err != nil {
+			continue
+		}
+
+		decryptedData = append(decryptedData, *decryptedItem)
+	}
+
+	return decryptedData
+}
+
+func (l *LogoPassService) decryptLogoPass(
+	logopass entities.LogoPassword,
+	key string,
+) (*entities.LogoPassword, error) {
+	decryptedLogin, err := l.cryptoModule.Decrypt(logopass.Username, key)
+	if err != nil {
+		return nil, err
+	}
+
+	decryptedPassword, err := l.cryptoModule.Decrypt(logopass.Password, key)
+	if err != nil {
+		return nil, err
+	}
+
+	logopass.Username = decryptedLogin
+	logopass.Password = decryptedPassword
+
+	return &logopass, nil
 }

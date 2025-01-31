@@ -13,9 +13,10 @@ import (
 )
 
 type UserService struct {
-	log    *zap.Logger
-	dbUser UserStorage
-	cfg    config.Config
+	log          *zap.Logger
+	dbUser       UserStorage
+	cfg          config.Config
+	cryptoModule CryptoModule
 }
 
 type UserStorage interface {
@@ -25,13 +26,15 @@ type UserStorage interface {
 
 func NewUserService(
 	dbUser UserStorage,
+	cryptoModule CryptoModule,
 	cfg config.Config,
 	logger *zap.Logger,
 ) *UserService {
 	return &UserService{
-		dbUser: dbUser,
-		log:    logger,
-		cfg:    cfg,
+		dbUser:       dbUser,
+		cryptoModule: cryptoModule,
+		log:          logger,
+		cfg:          cfg,
 	}
 }
 
@@ -83,7 +86,7 @@ func (u *UserService) Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJ
 	generatedTokens := dto.GeneratedJwt{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		Hash:         createdUser.Password,
+		Hash:         u.cryptoModule.GenerateSecretPhrase(createdUser.Password),
 	}
 
 	return &generatedTokens, nil
@@ -134,7 +137,6 @@ func (u *UserService) Login(loginDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
 	generatedTokens := dto.GeneratedJwt{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		Hash:         curUser.Password,
 	}
 
 	return &generatedTokens, nil
