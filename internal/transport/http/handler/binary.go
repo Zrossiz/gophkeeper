@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -31,11 +33,28 @@ func NewBinaryHandler(service BinaryService, logger *zap.Logger) *BinaryHandler 
 }
 
 func (b *BinaryHandler) Create(rw http.ResponseWriter, r *http.Request) {
-	var body dto.CreateBinaryDTO
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		http.Error(rw, apperrors.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(rw, "File too large or invalid request", http.StatusBadRequest)
 		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(rw, "File is required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	fileData, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(rw, "Failed to read file", http.StatusInternalServerError)
+		return
+	}
+
+	body := dto.CreateBinaryDTO{
+		Title: header.Filename,
+		Data:  fileData,
 	}
 
 	err = b.service.Create(body)
@@ -46,21 +65,37 @@ func (b *BinaryHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.WriteHeader(http.StatusCreated)
+	fmt.Fprintln(rw, "File uploaded successfully!")
 }
 
 func (b *BinaryHandler) Update(rw http.ResponseWriter, r *http.Request) {
-	var body dto.UpdateBinaryDTO
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		http.Error(rw, apperrors.ErrInvalidRequestBody, http.StatusBadRequest)
+		http.Error(rw, "File too large or invalid request", http.StatusBadRequest)
 		return
 	}
 
 	binaryID := chi.URLParam(r, "binaryID")
 	intBinaryID, err := strconv.Atoi(binaryID)
 	if err != nil {
-		http.Error(rw, "invalid user id ", http.StatusBadRequest)
+		http.Error(rw, "Invalid binary ID", http.StatusBadRequest)
 		return
+	}
+
+	file, header, err := r.FormFile("file")
+	var fileData []byte
+	if err == nil {
+		defer file.Close()
+		fileData, err = io.ReadAll(file)
+		if err != nil {
+			http.Error(rw, "Failed to read file", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	body := dto.UpdateBinaryDTO{
+		Title: header.Filename,
+		Data:  fileData,
 	}
 
 	err = b.service.Update(intBinaryID, body)
@@ -71,6 +106,7 @@ func (b *BinaryHandler) Update(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.WriteHeader(http.StatusOK)
+	fmt.Fprintln(rw, "File updated successfully!")
 }
 
 func (b *BinaryHandler) GetAll(rw http.ResponseWriter, r *http.Request) {

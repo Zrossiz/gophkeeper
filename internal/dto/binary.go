@@ -3,7 +3,7 @@ package dto
 type CreateBinaryDTO struct {
 	UserId int    `json:"user_id"`
 	Title  string `json:"title"`
-	Data   string `json:"data"`
+	Data   []byte `json:"data"`
 }
 
 type SetStorageBinaryDTO struct {
@@ -14,5 +14,5 @@ type SetStorageBinaryDTO struct {
 
 type UpdateBinaryDTO struct {
 	Title string `json:"title"`
-	Data  string `json:"data"`
+	Data  []byte `json:"data"`
 }
