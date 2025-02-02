@@ -9,6 +9,7 @@ type Storage struct {
 	Card     CardStorage
 	LogoPass LogoPassStorage
 	User     UserStorage
+	Note     NotesStorage
 }
 
 func New(conn *sql.DB) *Storage {
@@ -17,6 +18,7 @@ func New(conn *sql.DB) *Storage {
 		Card:     *NewCardStorage(conn),
 		LogoPass: *NewLogoPassStorage(conn),
 		Binary:   *NewBinaryStorage(conn),
+		Note:     *NewNotesStorage(conn),
 	}
 }
 

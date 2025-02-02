@@ -28,7 +28,7 @@ func (n *NotesStorage) Create(body dto.CreateNoteDTO) error {
 }
 
 func (n *NotesStorage) Update(noteID int, body dto.UpdateNoteDTO) error {
-	query := `UPDATE notes SET title = $1, text_data = $2, updated_at = NOW()`
+	query := `UPDATE notes SET title = $1, text_data = $2, updated_at = NOW() WHERE id = $3`
 
 	_, err := n.db.Exec(query, body.Title, body.TextData, noteID)
 	if err != nil {
@@ -39,7 +39,7 @@ func (n *NotesStorage) Update(noteID int, body dto.UpdateNoteDTO) error {
 }
 
 func (n *NotesStorage) GetAllByUser(userID int) ([]entities.Note, error) {
-	query := `SELECT id, user_id, title, text_data, created_at, updated_at WHERE user_id = $1`
+	query := `SELECT id, user_id, title, text_data, created_at, updated_at FROM notes WHERE user_id = $1`
 
 	rows, err := n.db.Query(query, userID)
 	if err != nil {

@@ -1,9 +1,10 @@
 package dto
 
 type CreateBinaryDTO struct {
-	UserId int    `json:"user_id"`
+	UserID int    `json:"user_id"`
 	Title  string `json:"title"`
 	Data   []byte `json:"data"`
+	Key    string
 }
 
 type SetStorageBinaryDTO struct {

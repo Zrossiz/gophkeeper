@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/Zrossiz/gophkeeper/internal/dto"
 	"github.com/Zrossiz/gophkeeper/internal/entities"
 	"go.uber.org/zap"
@@ -46,9 +48,15 @@ func (c *CardService) Create(body dto.CreateCardDTO) error {
 		return err
 	}
 
+	encryptedCardHolderName, err := c.cryptoModule.Encrypt(body.CardHolderName, body.Key)
+	if err != nil {
+		return err
+	}
+
 	body.Num = encryptedNum
 	body.CVV = encryptedCVV
 	body.ExpDate = encryptedExpDate
+	body.CardHolderName = encryptedCardHolderName
 
 	return c.cardStorage.CreateCard(body)
 }
@@ -69,9 +77,15 @@ func (c *CardService) Update(cardID int64, body dto.UpdateCardDTO) error {
 		return err
 	}
 
+	encryptedCardHolderName, err := c.cryptoModule.Encrypt(body.CardHolderName, body.Key)
+	if err != nil {
+		return err
+	}
+
 	body.Num = encryptedNum
 	body.CVV = encryptedCVV
 	body.ExpDate = encryptedExpDate
+	body.CardHolderName = encryptedCardHolderName
 
 	return c.cardStorage.UpdateCard(cardID, body)
 }
@@ -82,16 +96,18 @@ func (c *CardService) GetAll(userID int64, key string) ([]entities.Card, error) 
 		return nil, err
 	}
 
+	if len(encryptedData) == 0 {
+		return nil, fmt.Errorf("records not found")
+	}
 	decryptedData := c.decryptCardArray(encryptedData, key)
-
 	return decryptedData, nil
 }
 
-func (c *CardService) decryptCardArray(card []entities.Card, key string) []entities.Card {
-	decryptedData := make([]entities.Card, 0, len(card))
+func (c *CardService) decryptCardArray(cards []entities.Card, key string) []entities.Card {
+	decryptedData := make([]entities.Card, 0, len(cards))
 
-	for i := 0; i < len(card); i++ {
-		decryptedCard, err := c.decryptCard(card[i], key)
+	for i := 0; i < len(cards); i++ {
+		decryptedCard, err := c.decryptCard(cards[i], key)
 		if err != nil {
 			continue
 		}
@@ -117,9 +133,15 @@ func (c *CardService) decryptCard(card entities.Card, key string) (*entities.Car
 		return nil, err
 	}
 
+	decryptedCardHolderName, err := c.cryptoModule.Decrypt(card.CardHolderName, key)
+	if err != nil {
+		return nil, err
+	}
+
 	card.Number = decryptedNum
 	card.ExpDate = decryptedExpDate
 	card.CVV = decryptedCVV
+	card.CardHolderName = decryptedCardHolderName
 
 	return &card, nil
 }

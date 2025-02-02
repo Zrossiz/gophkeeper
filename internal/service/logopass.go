@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/Zrossiz/gophkeeper/internal/dto"
 	"github.com/Zrossiz/gophkeeper/internal/entities"
 	"go.uber.org/zap"
@@ -80,6 +82,10 @@ func (l *LogoPassService) GetAll(userID int64, key string) ([]entities.LogoPassw
 		return nil, err
 	}
 
+	if len(items) == 0 {
+		return nil, fmt.Errorf("records not found")
+	}
+
 	decryptedData := l.decryptLogoPassArray(items, key)
 
 	return decryptedData, nil
@@ -92,7 +98,7 @@ func (l *LogoPassService) decryptLogoPassArray(
 	decryptedData := make([]entities.LogoPassword, 0, len(encryptedData))
 
 	for i := 0; i < len(encryptedData); i++ {
-		decryptedItem, err := l.decryptLogoPass(decryptedData[i], key)
+		decryptedItem, err := l.decryptLogoPass(encryptedData[i], key)
 		if err != nil {
 			continue
 		}

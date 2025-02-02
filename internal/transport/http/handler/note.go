@@ -48,7 +48,9 @@ func (n *NoteHandler) Create(rw http.ResponseWriter, r *http.Request) {
 
 	err = n.service.Create(body)
 	if err != nil {
+		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
 		n.log.Sugar().Errorf("create note error: %v", err)
+		return
 	}
 
 	rw.WriteHeader(http.StatusCreated)
@@ -100,6 +102,8 @@ func (n *NoteHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "invalid user id ", http.StatusBadRequest)
 		return
 	}
+
+	n.log.Info("url valid")
 
 	items, err := n.service.GetAll(intUserID, key.Value)
 	if err != nil {

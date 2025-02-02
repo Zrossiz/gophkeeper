@@ -25,6 +25,8 @@ type CryptoModule interface {
 	Encrypt(plaintext, key string) (string, error)
 	Decrypt(encryptedText, key string) (string, error)
 	GenerateSecretPhrase(txt string) string
+	EncryptBinaryData(plaintext []byte, key string) ([]byte, error)
+	DecryptBinaryData(encryptedData []byte, key string) ([]byte, error)
 }
 
 func New(

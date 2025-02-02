@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -84,4 +85,53 @@ func (c *CryptoModule) deriveKey(password string) []byte {
 	hash := make([]byte, 32)
 	copy(hash, []byte(password))
 	return hash
+}
+
+func (c *CryptoModule) EncryptBinaryData(plaintext []byte, key string) ([]byte, error) {
+	keyBytes := c.deriveKey(key)
+
+	block, err := aes.NewCipher(keyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	aesGCM, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := make([]byte, aesGCM.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, err
+	}
+
+	ciphertext := aesGCM.Seal(nil, nonce, plaintext, nil)
+	return append(nonce, ciphertext...), nil
+}
+
+func (c *CryptoModule) DecryptBinaryData(encryptedData []byte, key string) ([]byte, error) {
+	keyBytes := c.deriveKey(key)
+
+	block, err := aes.NewCipher(keyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	aesGCM, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonceSize := aesGCM.NonceSize()
+	if len(encryptedData) < nonceSize {
+		return nil, errors.New("invalid data")
+	}
+
+	nonce, ciphertext := encryptedData[:nonceSize], encryptedData[nonceSize:]
+	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return nil, fmt.Errorf("cipher: message authentication failed: %w", err)
+	}
+
+	return plaintext, nil
 }

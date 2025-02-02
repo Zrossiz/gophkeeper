@@ -165,15 +165,7 @@ func (u *UserHandler) Login(rw http.ResponseWriter, r *http.Request) {
 	http.SetCookie(rw, &refreshTokenCookie)
 	http.SetCookie(rw, &accessTokenCookie)
 	http.SetCookie(rw, &keyCookie)
-	response := map[string]string{
-		"hash": generatedJwt.Hash,
-	}
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(rw).Encode(response)
-	if err != nil {
-		http.Error(rw, "failed to encode response", http.StatusInternalServerError)
-		return
-	}
 }

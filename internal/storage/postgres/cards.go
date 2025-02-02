@@ -18,7 +18,7 @@ func NewCardStorage(db *sql.DB) *CardStorage {
 func (c *CardStorage) CreateCard(body dto.CreateCardDTO) error {
 	query := `
 		INSERT INTO cards (user_id, bank_name, num, cvv, exp_date, card_holder_name) 
-		VALUES ($1, $2, $3, $4, $5)
+		VALUES ($1, $2, $3, $4, $5, $6)
 	`
 
 	_, err := c.db.Exec(
@@ -38,7 +38,7 @@ func (c *CardStorage) CreateCard(body dto.CreateCardDTO) error {
 }
 
 func (c *CardStorage) GetAllCardsByUserId(userID int64) ([]entities.Card, error) {
-	query := `SELECT id, user_id, bankName, num, cvv, exp_date, card_holder_name, created_at, updated_at 
+	query := `SELECT id, user_id, bank_name, num, cvv, exp_date, card_holder_name, created_at, updated_at 
               FROM cards WHERE user_id = $1`
 
 	rows, err := c.db.Query(query, userID)

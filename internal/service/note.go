@@ -66,7 +66,7 @@ func (n *NoteService) Update(noteID int, body dto.UpdateNoteDTO) error {
 	body.Title = encryptedTitle
 	body.TextData = encryptedTextData
 
-	err = n.Update(noteID, body)
+	err = n.noteDB.Update(noteID, body)
 	if err != nil {
 		return err
 	}
@@ -91,8 +91,8 @@ func (n *NoteService) decryptNotesArray(
 ) []entities.Note {
 	decryptedData := make([]entities.Note, 0, len(encryptedData))
 
-	for i := 0; i < len(decryptedData); i++ {
-		decryptedNote, err := n.decryptNote(decryptedData[i], key)
+	for i := 0; i < len(encryptedData); i++ {
+		decryptedNote, err := n.decryptNote(encryptedData[i], key)
 		if err != nil {
 			continue
 		}

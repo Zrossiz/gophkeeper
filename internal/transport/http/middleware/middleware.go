@@ -4,17 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
+	"time"
 
 	"github.com/Zrossiz/gophkeeper/internal/config"
-	"github.com/golang-jwt/jwt"
+	"github.com/Zrossiz/gophkeeper/internal/utils"
+	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 )
-
-type Middleware struct {
-	cfg config.Config
-	log *zap.Logger
-}
 
 type contextKey string
 
@@ -23,65 +19,58 @@ const (
 	UserNameContextKey contextKey = "userName"
 )
 
+type Middleware struct {
+	cfg config.Config
+	log *zap.Logger
+}
+
 func New(cfg config.Config, log *zap.Logger) *Middleware {
-	return &Middleware{log: log}
+	return &Middleware{cfg: cfg, log: log}
 }
 
 func (m *Middleware) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("accesstoken")
 		if err != nil {
+			m.log.Warn("No access token cookie", zap.Error(err))
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 
 		tokenStr := cookie.Value
-
 		secretKey := []byte(m.cfg.AccessSecret)
 
-		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		claims := &utils.CustomClaims{}
+		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
 			return secretKey, nil
 		})
 
-		if err != nil || !token.Valid {
-			http.Error(w, "unauthorized", http.StatusUnauthorized)
+		if err != nil {
+			m.log.Warn("Token parsing failed", zap.Error(err))
+			http.Error(w, "unauthorized: invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			var userID int
-			var okID bool
-			if IDVal, ok := claims["userID"]; ok {
-				switch v := IDVal.(type) {
-				case string:
-					userID, err = strconv.Atoi(v)
-					if err != nil {
-						http.Error(w, "unauthorized", http.StatusUnauthorized)
-						return
-					}
-					okID = true
-				case float64:
-					userID = int(v)
-					okID = true
-				}
-			}
-
-			username, okName := claims["userName"].(string)
-			if !okID || !okName {
-				http.Error(w, "unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			ctx := context.WithValue(r.Context(), UserIDContextKey, userID)
-			ctx = context.WithValue(ctx, UserNameContextKey, username)
-
-			next.ServeHTTP(w, r.WithContext(ctx))
+		if !token.Valid {
+			m.log.Warn("Invalid token", zap.String("token", token.Raw))
+			http.Error(w, "unauthorized: invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		if claims.ExpiresAt == nil || time.Now().After(claims.ExpiresAt.Time) {
+			m.log.Warn("Token expired", zap.Time("expiresAt", claims.ExpiresAt.Time))
+			http.Error(w, "unauthorized: token expired", http.StatusUnauthorized)
+			return
+		}
+
+		m.log.Info("Token is valid", zap.Int64("userID", claims.UserID), zap.String("username", claims.Username))
+
+		ctx := context.WithValue(r.Context(), UserIDContextKey, claims.UserID)
+		ctx = context.WithValue(ctx, UserNameContextKey, claims.Username)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

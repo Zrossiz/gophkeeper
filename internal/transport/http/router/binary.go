@@ -13,7 +13,6 @@ type BinaryRouter struct {
 
 type BinaryHandler interface {
 	GetAll(rw http.ResponseWriter, r *http.Request)
-	Update(rw http.ResponseWriter, r *http.Request)
 	Create(rw http.ResponseWriter, r *http.Request)
 }
 
@@ -30,7 +29,6 @@ func NewBinaryRouter(
 func (b *BinaryRouter) RegisterRoutes(r chi.Router) {
 	r.Route("/api/binary", func(r chi.Router) {
 		r.With(b.m.Auth).Post("/", b.h.Create)
-		r.With(b.m.Auth).Get("/", b.h.GetAll)
-		r.With(b.m.Auth).Put("/{binaryID}", b.h.Update)
+		r.With(b.m.Auth).Get("/{userID}", b.h.GetAll)
 	})
 }

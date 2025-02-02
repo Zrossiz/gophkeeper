@@ -42,6 +42,7 @@ func Start() {
 		User:     &dbStore.User,
 		Binary:   &dbStore.Binary,
 		LogoPass: &dbStore.LogoPass,
+		Note:     &dbStore.Note,
 	}, *cfg, cryptoModule, log)
 
 	handler := handler.New(handler.Service{
@@ -49,6 +50,7 @@ func Start() {
 		User:     &serv.User,
 		Binary:   &serv.Binary,
 		LogoPass: &serv.LogoPass,
+		Note:     &serv.Note,
 	}, log)
 
 	router := router.New(router.Handler{
@@ -56,6 +58,7 @@ func Start() {
 		User:     &handler.User,
 		Binary:   &handler.Binary,
 		LogoPass: &handler.LogoPass,
+		Note:     &handler.Note,
 	}, authMiddleware)
 
 	srv := &http.Server{
