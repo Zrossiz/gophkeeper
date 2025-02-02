@@ -30,7 +30,7 @@ func NewCardRouter(
 func (c *CardRouter) RegisterRoutes(r chi.Router) {
 	r.Route("/api/card", func(r chi.Router) {
 		r.With(c.m.Auth).Post("/", c.h.Create)
-		r.With(c.m.Auth).Get("/{userID}", c.h.GetAll)
+		r.With(c.m.Auth).Get("/user/{userID}", c.h.GetAll)
 		r.With(c.m.Auth).Put("/{cardID}", c.h.Update)
 	})
 }

@@ -31,6 +31,17 @@ func NewCardHandler(service CardService, logger *zap.Logger) *CardHandler {
 	}
 }
 
+// @Summary Создать карточку
+// @Description Создает новую карточку пользователя
+// @Tags card
+// @Accept json
+// @Produce json
+// @Param body body dto.CreateCardDTO true "Данные для создания карточки"
+// @Success 201 {string} string "Created"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /card [post]
+// @Security BearerAuth
 func (c *CardHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	key, err := r.Cookie("key")
 	if err != nil {
@@ -57,6 +68,18 @@ func (c *CardHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 }
 
+// @Summary Обновить карточку
+// @Description Обновляет данные карточки
+// @Tags card
+// @Accept json
+// @Produce json
+// @Param cardID path int true "ID карточки"
+// @Param body body dto.UpdateCardDTO true "Данные для обновления карточки"
+// @Success 200 {string} string "OK"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /card/{cardID} [put]
+// @Security BearerAuth
 func (c *CardHandler) Update(rw http.ResponseWriter, r *http.Request) {
 	key, err := r.Cookie("key")
 	if err != nil {
@@ -89,6 +112,17 @@ func (c *CardHandler) Update(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 }
 
+// @Summary Получить все карточки пользователя
+// @Description Возвращает список всех карточек пользователя
+// @Tags card
+// @Accept json
+// @Produce json
+// @Param userID path int true "ID пользователя"
+// @Success 200 {array} entities.Card "Список карточек"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /card/user/{userID} [get]
+// @Security BearerAuth
 func (c *CardHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 	key, err := r.Cookie("key")
 	if err != nil {

@@ -30,6 +30,19 @@ func NewNoteHandler(service NoteService, log *zap.Logger) *NoteHandler {
 	}
 }
 
+// @Summary Создать заметку
+// @Description Создает новую заметку
+// @Tags note
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer токен" default(Bearer {token})
+// @Param body body dto.CreateNoteDTO true "Данные для создания заметки"
+// @Success 201 {string} string "Created"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /note [post]
+// @Security BearerAuth
 func (n *NoteHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	key, err := r.Cookie("key")
 	if err != nil {
@@ -56,6 +69,20 @@ func (n *NoteHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 }
 
+// @Summary Обновить заметку
+// @Description Обновляет существующую заметку
+// @Tags note
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer токен" default(Bearer {token})
+// @Param noteID path int true "ID заметки"
+// @Param body body dto.UpdateNoteDTO true "Данные для обновления"
+// @Success 200 {string} string "OK"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /note/{noteID} [put]
+// @Security BearerAuth
 func (n *NoteHandler) Update(rw http.ResponseWriter, r *http.Request) {
 	noteID := chi.URLParam(r, "noteID")
 	intNoteID, err := strconv.Atoi(noteID)
@@ -89,6 +116,19 @@ func (n *NoteHandler) Update(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 }
 
+// @Summary Получить все заметки пользователя
+// @Description Возвращает список всех заметок пользователя
+// @Tags note
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer токен" default(Bearer {token})
+// @Param userID path int true "ID пользователя"
+// @Success 200 {array} entities.Note "Список заметок"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /note/user/{userID} [get]
+// @Security BearerAuth
 func (n *NoteHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 	key, err := r.Cookie("key")
 	if err != nil {

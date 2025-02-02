@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Router struct {
@@ -45,6 +46,8 @@ func New(
 	router.LogoPass.RegisterRoutes(r)
 	router.Binary.RegisterRoutes(r)
 	router.Note.RegisterRoutes(r)
+
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	return r
 }

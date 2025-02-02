@@ -29,6 +29,6 @@ func NewBinaryRouter(
 func (b *BinaryRouter) RegisterRoutes(r chi.Router) {
 	r.Route("/api/binary", func(r chi.Router) {
 		r.With(b.m.Auth).Post("/", b.h.Create)
-		r.With(b.m.Auth).Get("/{userID}", b.h.GetAll)
+		r.With(b.m.Auth).Get("/user/{userID}", b.h.GetAll)
 	})
 }

@@ -17,6 +17,11 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title GophKeeper API
+// @version 1.0
+// @description API для управления секретными данными (карточки, пароли и т.д.).
+// @host localhost:8080
+// @BasePath /api
 func Start() {
 	cfg, err := config.New()
 	if err != nil {

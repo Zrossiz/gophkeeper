@@ -30,7 +30,7 @@ func NewNoteRouter(
 func (n *NoteRouter) RegisterRoutes(r chi.Router) {
 	r.Route("/api/note", func(r chi.Router) {
 		r.With(n.m.Auth).Post("/", n.h.Create)
-		r.With(n.m.Auth).Get("/{userID}", n.h.GetAll)
+		r.With(n.m.Auth).Get("/user/{userID}", n.h.GetAll)
 		r.With(n.m.Auth).Put("/{noteID}", n.h.Update)
 	})
 }

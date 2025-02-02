@@ -24,6 +24,17 @@ func NewUserHandler(serv UserService, log *zap.Logger) *UserHandler {
 	return &UserHandler{service: serv}
 }
 
+// @Summary Регистрация пользователя
+// @Description Создает нового пользователя в системе
+// @Tags user
+// @Accept  json
+// @Produce  json
+// @Param request body dto.UserDTO true "Данные пользователя"
+// @Success 200
+// @Failure 400
+// @Failure 409
+// @Failure 500
+// @Router /api/user/register [post]
 func (u *UserHandler) Registration(rw http.ResponseWriter, r *http.Request) {
 	var registrationDTO dto.UserDTO
 
@@ -98,6 +109,17 @@ func (u *UserHandler) Registration(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(response)
 }
 
+// @Summary Авторизация пользователя
+// @Description Аутентифицирует пользователя по логину и паролю
+// @Tags user
+// @Accept  json
+// @Produce  json
+// @Param request body dto.UserDTO true "Данные пользователя"
+// @Success 200
+// @Failure 400
+// @Failure 401
+// @Failure 500
+// @Router /api/user/login [post]
 func (u *UserHandler) Login(rw http.ResponseWriter, r *http.Request) {
 	var loginDTO dto.UserDTO
 

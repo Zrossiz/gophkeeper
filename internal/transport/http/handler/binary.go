@@ -31,6 +31,20 @@ func NewBinaryHandler(service BinaryService, logger *zap.Logger) *BinaryHandler 
 	}
 }
 
+// @Summary Загрузить бинарные данные
+// @Description Загружает бинарный файл пользователя
+// @Tags binary
+// @Accept multipart/form-data
+// @Produce json
+// @Param Authorization header string true "Bearer токен" default(Bearer {token})
+// @Param file formData file true "Файл для загрузки"
+// @Param user_id formData int true "ID пользователя"
+// @Success 201 {string} string "File uploaded successfully!"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /binary/ [post]
+// @Security BearerAuth
 func (b *BinaryHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
@@ -81,6 +95,19 @@ func (b *BinaryHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(rw, "File uploaded successfully!")
 }
 
+// @Summary Получить все бинарные данные пользователя
+// @Description Возвращает список всех загруженных бинарных данных пользователя
+// @Tags binary
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer токен" default(Bearer {token})
+// @Param userID path int true "ID пользователя"
+// @Success 200 {array} entities.BinaryData "Список бинарных данных"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /binary/user/{userID} [get]
+// @Security BearerAuth
 func (b *BinaryHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 	intUserID, err := strconv.Atoi(userID)

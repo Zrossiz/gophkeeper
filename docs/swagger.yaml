@@ -1,4 +1,666 @@
+basePath: /api
+definitions:
+  dto.CreateCardDTO:
+    properties:
+      bank_name:
+        type: string
+      card_holder_name:
+        type: string
+      cvv:
+        type: string
+      exp_date:
+        type: string
+      key:
+        type: string
+      num:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.CreateLogoPassDTO:
+    properties:
+      app_name:
+        type: string
+      key:
+        type: string
+      password:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  dto.CreateNoteDTO:
+    properties:
+      key:
+        type: string
+      text_data:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.UpdateCardDTO:
+    properties:
+      card_holder_name:
+        type: string
+      cvv:
+        type: string
+      exp_date:
+        type: string
+      key:
+        type: string
+      num:
+        type: string
+    type: object
+  dto.UpdateLogoPassDTO:
+    properties:
+      key:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.UpdateNoteDTO:
+    properties:
+      key:
+        type: string
+      text_data:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.UserDTO:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  entities.BinaryData:
+    properties:
+      binary_data:
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  entities.Card:
+    properties:
+      bank_name:
+        type: string
+      card_holder_name:
+        type: string
+      created_at:
+        type: string
+      cvv:
+        type: string
+      exp_date:
+        type: string
+      id:
+        type: integer
+      num:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  entities.LogoPassword:
+    properties:
+      app_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  entities.Note:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      text_data:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+host: localhost:8080
 info:
   contact: {}
-paths: {}
+  description: API для управления секретными данными (карточки, пароли и т.д.).
+  title: GophKeeper API
+  version: "1.0"
+paths:
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      description: Аутентифицирует пользователя по логину и паролю
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Авторизация пользователя
+      tags:
+      - user
+  /api/user/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя в системе
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+        "500":
+          description: Internal Server Error
+      summary: Регистрация пользователя
+      tags:
+      - user
+  /binary/:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загружает бинарный файл пользователя
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Файл для загрузки
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: ID пользователя
+        in: formData
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: File uploaded successfully!
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Загрузить бинарные данные
+      tags:
+      - binary
+  /binary/user/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список всех загруженных бинарных данных пользователя
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список бинарных данных
+          schema:
+            items:
+              $ref: '#/definitions/entities.BinaryData'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получить все бинарные данные пользователя
+      tags:
+      - binary
+  /card:
+    post:
+      consumes:
+      - application/json
+      description: Создает новую карточку пользователя
+      parameters:
+      - description: Данные для создания карточки
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCardDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Создать карточку
+      tags:
+      - card
+  /card/{cardID}:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные карточки
+      parameters:
+      - description: ID карточки
+        in: path
+        name: cardID
+        required: true
+        type: integer
+      - description: Данные для обновления карточки
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCardDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Обновить карточку
+      tags:
+      - card
+  /card/user/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список всех карточек пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список карточек
+          schema:
+            items:
+              $ref: '#/definitions/entities.Card'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получить все карточки пользователя
+      tags:
+      - card
+  /logo-pass:
+    post:
+      consumes:
+      - application/json
+      description: Создает новую запись логина и пароля пользователя
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные для создания логина и пароля
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLogoPassDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Создать логин-пароль
+      tags:
+      - logopass
+  /logo-pass/{logoPassID}:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет существующую запись логина и пароля
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID логина-пароля
+        in: path
+        name: logoPassID
+        required: true
+        type: integer
+      - description: Данные для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateLogoPassDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Обновить логин-пароль
+      tags:
+      - logopass
+  /logo-pass/user/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список всех сохраненных логинов и паролей
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список логинов и паролей
+          schema:
+            items:
+              $ref: '#/definitions/entities.LogoPassword'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получить все логин-пароли пользователя
+      tags:
+      - logopass
+  /note:
+    post:
+      consumes:
+      - application/json
+      description: Создает новую заметку
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные для создания заметки
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateNoteDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Создать заметку
+      tags:
+      - note
+  /note/{noteID}:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет существующую заметку
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID заметки
+        in: path
+        name: noteID
+        required: true
+        type: integer
+      - description: Данные для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateNoteDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Обновить заметку
+      tags:
+      - note
+  /note/user/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список всех заметок пользователя
+      parameters:
+      - default: Bearer {token}
+        description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список заметок
+          schema:
+            items:
+              $ref: '#/definitions/entities.Note'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получить все заметки пользователя
+      tags:
+      - note
 swagger: "2.0"
