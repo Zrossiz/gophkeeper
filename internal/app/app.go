@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	_ "github.com/Zrossiz/gophkeeper/docs"
 	"github.com/Zrossiz/gophkeeper/internal/config"
 	"github.com/Zrossiz/gophkeeper/internal/cryptox"
 	"github.com/Zrossiz/gophkeeper/internal/service"
