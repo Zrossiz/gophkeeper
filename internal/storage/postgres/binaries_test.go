@@ -81,7 +81,6 @@ func TestBinaryStorage_Create(t *testing.T) {
 	err := storage.Create(body)
 	assert.NoError(t, err, "Create should insert binary data without error")
 
-	// Проверка, что данные действительно были вставлены
 	var count int
 	err = db.QueryRow("SELECT COUNT(*) FROM binary_data WHERE user_id = $1 AND title = $2", body.UserID, body.Title).Scan(&count)
 	assert.NoError(t, err, "Failed to query binary_data table")
@@ -94,7 +93,6 @@ func TestBinaryStorage_Update(t *testing.T) {
 
 	storage := NewBinaryStorage(db)
 
-	// Сначала создаем запись для обновления
 	createBody := dto.SetStorageBinaryDTO{
 		UserID: 1,
 		Title:  "test title",
@@ -103,7 +101,6 @@ func TestBinaryStorage_Update(t *testing.T) {
 	err := storage.Create(createBody)
 	assert.NoError(t, err, "Create should insert binary data without error")
 
-	// Обновляем запись
 	updateBody := dto.SetStorageBinaryDTO{
 		UserID: 1,
 		Title:  "test title",
@@ -112,7 +109,6 @@ func TestBinaryStorage_Update(t *testing.T) {
 	err = storage.Update(updateBody)
 	assert.NoError(t, err, "Update should update binary data without error")
 
-	// Проверка, что данные действительно были обновлены
 	var data []byte
 	err = db.QueryRow("SELECT binary_data FROM binary_data WHERE user_id = $1 AND title = $2", updateBody.UserID, updateBody.Title).Scan(&data)
 	assert.NoError(t, err, "Failed to query binary_data table")
@@ -125,7 +121,6 @@ func TestBinaryStorage_GetAllByUser(t *testing.T) {
 
 	storage := NewBinaryStorage(db)
 
-	// Создаем несколько записей для одного пользователя
 	userID := int64(1)
 	bodies := []dto.SetStorageBinaryDTO{
 		{UserID: int(userID), Title: "title1", Data: []byte("data1")},
@@ -136,7 +131,6 @@ func TestBinaryStorage_GetAllByUser(t *testing.T) {
 		assert.NoError(t, err, "Create should insert binary data without error")
 	}
 
-	// Получаем все записи для пользователя
 	binaryDataList, err := storage.GetAllByUser(userID)
 	assert.NoError(t, err, "GetAllByUser should retrieve binary data without error")
 	assert.Len(t, binaryDataList, len(bodies), "Expected number of binary data records to match")
