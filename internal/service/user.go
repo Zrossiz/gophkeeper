@@ -12,18 +12,32 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// UserService handles user authentication, registration, and JWT generation.
 type UserService struct {
-	log          *zap.Logger
-	dbUser       UserStorage
-	cfg          config.Config
-	cryptoModule CryptoModule
+	log          *zap.Logger   // Logger for structured logging.
+	dbUser       UserStorage   // Database storage interface for user data.
+	cfg          config.Config // Application configuration.
+	cryptoModule CryptoModule  // Cryptographic module for password security.
 }
 
+// UserStorage defines database operations related to user management.
 type UserStorage interface {
+	// Create saves a new user record in the database.
 	Create(body dto.UserDTO) error
+	// GetUserByUsername retrieves a user by their username.
 	GetUserByUsername(username string) (*entities.User, error)
 }
 
+// NewUserService initializes and returns a new UserService instance.
+//
+// Parameters:
+//   - dbUser: Implementation of UserStorage interface.
+//   - cryptoModule: Cryptographic module for password security.
+//   - cfg: Application configuration.
+//   - logger: Structured logger (zap.Logger).
+//
+// Returns:
+//   - A pointer to a fully initialized UserService instance.
 func NewUserService(
 	dbUser UserStorage,
 	cryptoModule CryptoModule,
@@ -38,6 +52,14 @@ func NewUserService(
 	}
 }
 
+// Registration registers a new user, hashes their password, and generates JWT tokens.
+//
+// Parameters:
+//   - registrationDTO: Contains user registration details (username, password).
+//
+// Returns:
+//   - A pointer to GeneratedJwt struct containing access and refresh tokens.
+//   - An error if user creation fails or token generation fails.
 func (u *UserService) Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
 	hashedPassword, err := hashPassword(registrationDTO.Password, u.cfg.Cost)
 	if err != nil {
@@ -92,6 +114,14 @@ func (u *UserService) Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJ
 	return &generatedTokens, nil
 }
 
+// Login authenticates a user and generates JWT tokens.
+//
+// Parameters:
+//   - loginDTO: Contains user login details (username, password).
+//
+// Returns:
+//   - A pointer to GeneratedJwt struct containing access and refresh tokens.
+//   - An error if authentication fails.
 func (u *UserService) Login(loginDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
 	curUser, err := u.dbUser.GetUserByUsername(loginDTO.Username)
 	if err != nil {
@@ -142,6 +172,15 @@ func (u *UserService) Login(loginDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
 	return &generatedTokens, nil
 }
 
+// hashPassword hashes a given password using bcrypt.
+//
+// Parameters:
+//   - password: The plain text password to be hashed.
+//   - cost: The bcrypt cost factor (determines computation complexity).
+//
+// Returns:
+//   - A hashed password as a string.
+//   - An error if hashing fails.
 func hashPassword(password string, cost int) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), cost)
 	if err != nil {

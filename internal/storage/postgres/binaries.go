@@ -1,3 +1,4 @@
+// Package postgres provides database storage implementations for various entities.
 package postgres
 
 import (
@@ -9,14 +10,29 @@ import (
 	"github.com/Zrossiz/gophkeeper/internal/entities"
 )
 
+// BinaryStorage provides methods for managing binary data in the PostgreSQL database.
 type BinaryStorage struct {
-	db *sql.DB
+	db *sql.DB // SQL database connection.
 }
 
+// NewBinaryStorage initializes and returns a new BinaryStorage instance.
+//
+// Parameters:
+//   - db: An active SQL database connection.
+//
+// Returns:
+//   - A pointer to an initialized BinaryStorage instance.
 func NewBinaryStorage(db *sql.DB) *BinaryStorage {
 	return &BinaryStorage{db: db}
 }
 
+// Create inserts a new binary data record into the database.
+//
+// Parameters:
+//   - body: A SetStorageBinaryDTO struct containing user ID, title, and binary data.
+//
+// Returns:
+//   - An error if the operation fails.
 func (b *BinaryStorage) Create(body dto.SetStorageBinaryDTO) error {
 	query := `
 		INSERT INTO binary_data (user_id, title, binary_data, created_at, updated_at)
@@ -29,6 +45,13 @@ func (b *BinaryStorage) Create(body dto.SetStorageBinaryDTO) error {
 	return nil
 }
 
+// Update modifies an existing binary data record in the database.
+//
+// Parameters:
+//   - body: A SetStorageBinaryDTO struct containing the updated binary data.
+//
+// Returns:
+//   - An error if the update operation fails or the record is not found.
 func (b *BinaryStorage) Update(body dto.SetStorageBinaryDTO) error {
 	query := `
 		UPDATE binary_data
@@ -51,6 +74,14 @@ func (b *BinaryStorage) Update(body dto.SetStorageBinaryDTO) error {
 	return nil
 }
 
+// GetAllByUser retrieves all binary data records for a given user.
+//
+// Parameters:
+//   - userID: The unique identifier of the user.
+//
+// Returns:
+//   - A slice of BinaryData entities containing the user's stored binary data.
+//   - An error if the retrieval fails.
 func (b *BinaryStorage) GetAllByUser(userID int64) ([]entities.BinaryData, error) {
 	query := `
 		SELECT id, user_id, title, binary_data, created_at, updated_at

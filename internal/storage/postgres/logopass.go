@@ -1,3 +1,4 @@
+// Package postgres provides database storage implementations for various entities.
 package postgres
 
 import (
@@ -8,14 +9,29 @@ import (
 	"github.com/Zrossiz/gophkeeper/internal/entities"
 )
 
+// LogoPassStorage handles database operations related to stored application passwords.
 type LogoPassStorage struct {
-	db *sql.DB
+	db *sql.DB // SQL database connection.
 }
 
+// NewLogoPassStorage initializes and returns a new LogoPassStorage instance.
+//
+// Parameters:
+//   - db: An active SQL database connection.
+//
+// Returns:
+//   - A pointer to an initialized LogoPassStorage instance.
 func NewLogoPassStorage(db *sql.DB) *LogoPassStorage {
 	return &LogoPassStorage{db: db}
 }
 
+// CreateLogoPass inserts a new application password record into the database.
+//
+// Parameters:
+//   - body: A CreateLogoPassDTO struct containing user ID, application name, username, and password.
+//
+// Returns:
+//   - An error if the operation fails.
 func (l *LogoPassStorage) CreateLogoPass(body dto.CreateLogoPassDTO) error {
 	query := `INSERT INTO passwords (user_id, app_name, username, password, created_at, updated_at) 
               VALUES ($1, $2, $3, $4, NOW(), NOW())`
@@ -26,6 +42,14 @@ func (l *LogoPassStorage) CreateLogoPass(body dto.CreateLogoPassDTO) error {
 	return nil
 }
 
+// GetAllByUser retrieves all stored application passwords for a given user.
+//
+// Parameters:
+//   - userID: The unique identifier of the user.
+//
+// Returns:
+//   - A slice of LogoPassword entities containing the user's stored credentials.
+//   - An error if the retrieval fails.
 func (l *LogoPassStorage) GetAllByUser(userID int64) ([]entities.LogoPassword, error) {
 	query := `SELECT id, user_id, app_name, username, password, created_at, updated_at 
               FROM passwords WHERE user_id = $1`
@@ -53,6 +77,14 @@ func (l *LogoPassStorage) GetAllByUser(userID int64) ([]entities.LogoPassword, e
 	return logoPasswords, nil
 }
 
+// UpdateLogoPass modifies an existing application password record in the database.
+//
+// Parameters:
+//   - id: The unique identifier of the password record to be updated.
+//   - body: An UpdateLogoPassDTO struct containing the updated username and password.
+//
+// Returns:
+//   - An error if the update operation fails.
 func (l *LogoPassStorage) UpdateLogoPass(id int64, body dto.UpdateLogoPassDTO) error {
 	query := `UPDATE passwords 
               SET username = $1, password = $2, updated_at = NOW() 

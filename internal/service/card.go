@@ -1,3 +1,4 @@
+// Package service provides business logic for managing encrypted card data storage.
 package service
 
 import (
@@ -8,18 +9,32 @@ import (
 	"go.uber.org/zap"
 )
 
+// CardService manages operations related to encrypted card data storage, including encryption and decryption.
 type CardService struct {
 	cardStorage  CardStorage
 	cryptoModule CryptoModule
 	log          *zap.Logger
 }
 
+// CardStorage defines an interface for storing, retrieving, and updating encrypted card data.
 type CardStorage interface {
+	// CreateCard stores an encrypted card in the database.
 	CreateCard(body dto.CreateCardDTO) error
+	// GetAllCardsByUserId retrieves all encrypted cards associated with a given user ID.
 	GetAllCardsByUserId(userID int64) ([]entities.Card, error)
+	// UpdateCard updates the encrypted card details for a specific card ID.
 	UpdateCard(cardID int64, body dto.UpdateCardDTO) error
 }
 
+// NewCardService creates a new instance of CardService with the provided dependencies.
+//
+// Parameters:
+//   - cardStorage: An implementation of the CardStorage interface for data persistence.
+//   - cryptoModule: An implementation of CryptoModule for encryption and decryption.
+//   - log: A structured logger (zap.Logger) for logging events.
+//
+// Returns:
+//   - A pointer to a CardService instance.
 func NewCardService(
 	cardStorage CardStorage,
 	cryptoModule CryptoModule,
@@ -32,6 +47,13 @@ func NewCardService(
 	}
 }
 
+// Create encrypts card data and stores it securely.
+//
+// Parameters:
+//   - body: A dto.CreateCardDTO containing card details and an encryption key.
+//
+// Returns:
+//   - An error if encryption or storage fails.
 func (c *CardService) Create(body dto.CreateCardDTO) error {
 	encryptedNum, err := c.cryptoModule.Encrypt(body.Num, body.Key)
 	if err != nil {
@@ -61,6 +83,14 @@ func (c *CardService) Create(body dto.CreateCardDTO) error {
 	return c.cardStorage.CreateCard(body)
 }
 
+// Update encrypts updated card data and stores it securely.
+//
+// Parameters:
+//   - cardID: The ID of the card to be updated.
+//   - body: A dto.UpdateCardDTO containing updated card details and an encryption key.
+//
+// Returns:
+//   - An error if encryption or storage fails.
 func (c *CardService) Update(cardID int64, body dto.UpdateCardDTO) error {
 	encryptedNum, err := c.cryptoModule.Encrypt(body.Num, body.Key)
 	if err != nil {
@@ -90,6 +120,14 @@ func (c *CardService) Update(cardID int64, body dto.UpdateCardDTO) error {
 	return c.cardStorage.UpdateCard(cardID, body)
 }
 
+// GetAll retrieves and decrypts all card data for a given user.
+//
+// Parameters:
+//   - userID: The ID of the user whose card data is being retrieved.
+//   - key: The encryption key required for decryption.
+//
+// Returns:
+//   - A slice of decrypted entities.Card or an error if retrieval or decryption fails.
 func (c *CardService) GetAll(userID int64, key string) ([]entities.Card, error) {
 	encryptedData, err := c.cardStorage.GetAllCardsByUserId(userID)
 	if err != nil {
@@ -99,10 +137,19 @@ func (c *CardService) GetAll(userID int64, key string) ([]entities.Card, error) 
 	if len(encryptedData) == 0 {
 		return nil, fmt.Errorf("records not found")
 	}
+
 	decryptedData := c.decryptCardArray(encryptedData, key)
 	return decryptedData, nil
 }
 
+// decryptCardArray decrypts an array of encrypted card data.
+//
+// Parameters:
+//   - cards: A slice of encrypted entities.Card.
+//   - key: The encryption key used for decryption.
+//
+// Returns:
+//   - A slice of decrypted entities.Card.
 func (c *CardService) decryptCardArray(cards []entities.Card, key string) []entities.Card {
 	decryptedData := make([]entities.Card, 0, len(cards))
 
@@ -117,6 +164,14 @@ func (c *CardService) decryptCardArray(cards []entities.Card, key string) []enti
 	return decryptedData
 }
 
+// decryptCard decrypts a single encrypted card entry.
+//
+// Parameters:
+//   - card: An encrypted entities.Card instance.
+//   - key: The encryption key used for decryption.
+//
+// Returns:
+//   - A pointer to a decrypted entities.Card or an error if decryption fails.
 func (c *CardService) decryptCard(card entities.Card, key string) (*entities.Card, error) {
 	decryptedNum, err := c.cryptoModule.Decrypt(card.Number, key)
 	if err != nil {
