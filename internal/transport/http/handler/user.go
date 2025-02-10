@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -16,8 +17,8 @@ type UserHandler struct {
 }
 
 type UserService interface {
-	Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error)
-	Login(loginDTO dto.UserDTO) (*dto.GeneratedJwt, error)
+	Registration(ctx context.Context, registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error)
+	Login(ctx context.Context, loginDTO dto.UserDTO) (*dto.GeneratedJwt, error)
 }
 
 func NewUserHandler(serv UserService, log *zap.Logger) *UserHandler {
@@ -54,7 +55,7 @@ func (u *UserHandler) Registration(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	generatedJwt, err := u.service.Registration(registrationDTO)
+	generatedJwt, err := u.service.Registration(r.Context(), registrationDTO)
 	if err != nil {
 		switch err {
 		case apperrors.ErrUserAlreadyExists:
@@ -106,7 +107,9 @@ func (u *UserHandler) Registration(rw http.ResponseWriter, r *http.Request) {
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(response)
+	if err := json.NewEncoder(rw).Encode(response); err != nil {
+		http.Error(rw, "faile to encode response", http.StatusInternalServerError)
+	}
 }
 
 // @Summary Авторизация пользователя
@@ -139,7 +142,7 @@ func (u *UserHandler) Login(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	generatedJwt, err := u.service.Login(loginDTO)
+	generatedJwt, err := u.service.Login(r.Context(), loginDTO)
 	if err != nil {
 		switch err {
 		case apperrors.ErrInvalidPassword:

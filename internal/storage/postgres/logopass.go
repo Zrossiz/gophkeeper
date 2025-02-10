@@ -2,6 +2,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -32,10 +33,10 @@ func NewLogoPassStorage(db *sql.DB) *LogoPassStorage {
 //
 // Returns:
 //   - An error if the operation fails.
-func (l *LogoPassStorage) CreateLogoPass(body dto.CreateLogoPassDTO) error {
+func (l *LogoPassStorage) CreateLogoPass(ctx context.Context, body dto.CreateLogoPassDTO) error {
 	query := `INSERT INTO passwords (user_id, app_name, username, password, created_at, updated_at) 
               VALUES ($1, $2, $3, $4, NOW(), NOW())`
-	_, err := l.db.Exec(query, body.UserId, body.AppName, body.Username, body.Password)
+	_, err := l.db.ExecContext(ctx, query, body.UserId, body.AppName, body.Username, body.Password)
 	if err != nil {
 		return fmt.Errorf("failed to create logo pass: %w", err)
 	}
@@ -50,11 +51,11 @@ func (l *LogoPassStorage) CreateLogoPass(body dto.CreateLogoPassDTO) error {
 // Returns:
 //   - A slice of LogoPassword entities containing the user's stored credentials.
 //   - An error if the retrieval fails.
-func (l *LogoPassStorage) GetAllByUser(userID int64) ([]entities.LogoPassword, error) {
+func (l *LogoPassStorage) GetAllByUser(ctx context.Context, userID int64) ([]entities.LogoPassword, error) {
 	query := `SELECT id, user_id, app_name, username, password, created_at, updated_at 
               FROM passwords WHERE user_id = $1`
 
-	rows, err := l.db.Query(query, userID)
+	rows, err := l.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get logo passes: %w", err)
 	}
@@ -85,11 +86,11 @@ func (l *LogoPassStorage) GetAllByUser(userID int64) ([]entities.LogoPassword, e
 //
 // Returns:
 //   - An error if the update operation fails.
-func (l *LogoPassStorage) UpdateLogoPass(id int64, body dto.UpdateLogoPassDTO) error {
+func (l *LogoPassStorage) UpdateLogoPass(ctx context.Context, id int64, body dto.UpdateLogoPassDTO) error {
 	query := `UPDATE passwords 
               SET username = $1, password = $2, updated_at = NOW() 
               WHERE id = $3`
-	_, err := l.db.Exec(query, body.Username, body.Password, id)
+	_, err := l.db.ExecContext(ctx, query, body.Username, body.Password, id)
 	if err != nil {
 		return fmt.Errorf("failed to update logo pass: %w", err)
 	}

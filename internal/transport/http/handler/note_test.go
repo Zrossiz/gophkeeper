@@ -22,17 +22,17 @@ type MockNoteService struct {
 	mock.Mock
 }
 
-func (m *MockNoteService) Create(body dto.CreateNoteDTO) error {
+func (m *MockNoteService) Create(ctx context.Context, body dto.CreateNoteDTO) error {
 	args := m.Called(body)
 	return args.Error(0)
 }
 
-func (m *MockNoteService) Update(noteID int, body dto.UpdateNoteDTO) error {
+func (m *MockNoteService) Update(ctx context.Context, noteID int, body dto.UpdateNoteDTO) error {
 	args := m.Called(noteID, body)
 	return args.Error(0)
 }
 
-func (m *MockNoteService) GetAll(userID int, key string) ([]entities.Note, error) {
+func (m *MockNoteService) GetAll(ctx context.Context, userID int, key string) ([]entities.Note, error) {
 	args := m.Called(userID, key)
 	if notes, ok := args.Get(0).([]entities.Note); ok {
 		return notes, args.Error(1)

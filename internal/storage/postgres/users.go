@@ -2,6 +2,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -35,9 +36,9 @@ func NewUserStorage(db *sql.DB) *UserStorage {
 //
 // Returns:
 //   - error: An error if the operation fails, otherwise nil.
-func (u *UserStorage) Create(body dto.UserDTO) error {
+func (u *UserStorage) Create(ctx context.Context, body dto.UserDTO) error {
 	query := `INSERT INTO users (username, password) VALUES ($1, $2)`
-	_, err := u.db.Exec(query, body.Username, body.Password)
+	_, err := u.db.ExecContext(ctx, query, body.Username, body.Password)
 	if err != nil {
 		return fmt.Errorf("create user error: %v", err)
 	}
@@ -53,9 +54,9 @@ func (u *UserStorage) Create(body dto.UserDTO) error {
 // Returns:
 //   - *entities.User: A pointer to the retrieved user entity if found.
 //   - error: Returns an error if the user is not found or if a query error occurs.
-func (u *UserStorage) GetUserByUsername(username string) (*entities.User, error) {
+func (u *UserStorage) GetUserByUsername(ctx context.Context, username string) (*entities.User, error) {
 	query := `SELECT id, username, password FROM users WHERE username = $1`
-	row := u.db.QueryRow(query, username)
+	row := u.db.QueryRowContext(ctx, query, username)
 	var user entities.User
 	err := row.Scan(&user.ID, &user.Username, &user.Password)
 	if err != nil {

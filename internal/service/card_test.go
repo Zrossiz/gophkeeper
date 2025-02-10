@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Zrossiz/gophkeeper/internal/dto"
@@ -14,17 +15,17 @@ type MockCardStorage struct {
 	mock.Mock
 }
 
-func (m *MockCardStorage) CreateCard(body dto.CreateCardDTO) error {
+func (m *MockCardStorage) CreateCard(ctx context.Context, body dto.CreateCardDTO) error {
 	args := m.Called(body)
 	return args.Error(0)
 }
 
-func (m *MockCardStorage) GetAllCardsByUserId(userID int64) ([]entities.Card, error) {
+func (m *MockCardStorage) GetAllCardsByUserId(ctx context.Context, userID int64) ([]entities.Card, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]entities.Card), args.Error(1)
 }
 
-func (m *MockCardStorage) UpdateCard(cardID int64, body dto.UpdateCardDTO) error {
+func (m *MockCardStorage) UpdateCard(ctx context.Context, cardID int64, body dto.UpdateCardDTO) error {
 	args := m.Called(cardID, body)
 	return args.Error(0)
 }
@@ -80,7 +81,7 @@ func TestCreateCard(t *testing.T) {
 
 	mockStorage.On("CreateCard", mock.Anything).Return(nil)
 
-	err := service.Create(cardDTO)
+	err := service.Create(context.Background(), cardDTO)
 
 	assert.NoError(t, err)
 	mockCrypto.AssertExpectations(t)
@@ -109,7 +110,7 @@ func TestUpdateCard(t *testing.T) {
 
 	mockStorage.On("UpdateCard", int64(1), mock.Anything).Return(nil)
 
-	err := service.Update(1, cardDTO)
+	err := service.Update(context.Background(), 1, cardDTO)
 
 	assert.NoError(t, err)
 	mockCrypto.AssertExpectations(t)
@@ -134,7 +135,7 @@ func TestGetAllCards_Success(t *testing.T) {
 	mockCrypto.On("Decrypt", "enc_3", "secret").Return("12/25", nil)
 	mockCrypto.On("Decrypt", "enc_4", "secret").Return("John Doe", nil)
 
-	cards, err := service.GetAll(1, "secret")
+	cards, err := service.GetAll(context.Background(), 1, "secret")
 
 	assert.NoError(t, err)
 	assert.Len(t, cards, 1)
@@ -156,7 +157,7 @@ func TestGetAllCards_NotFound(t *testing.T) {
 
 	mockStorage.On("GetAllCardsByUserId", int64(1)).Return([]entities.Card{}, nil)
 
-	cards, err := service.GetAll(1, "secret")
+	cards, err := service.GetAll(context.Background(), 1, "secret")
 
 	assert.Error(t, err)
 	assert.Nil(t, cards)

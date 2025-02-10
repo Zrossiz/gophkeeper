@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -19,17 +20,17 @@ type MockCardService struct {
 	mock.Mock
 }
 
-func (m *MockCardService) Create(body dto.CreateCardDTO) error {
+func (m *MockCardService) Create(ctx context.Context, body dto.CreateCardDTO) error {
 	args := m.Called(body)
 	return args.Error(0)
 }
 
-func (m *MockCardService) Update(cardID int64, body dto.UpdateCardDTO) error {
+func (m *MockCardService) Update(ctx context.Context, cardID int64, body dto.UpdateCardDTO) error {
 	args := m.Called(cardID, body)
 	return args.Error(0)
 }
 
-func (m *MockCardService) GetAll(userID int64, key string) ([]entities.Card, error) {
+func (m *MockCardService) GetAll(ctx context.Context, userID int64, key string) ([]entities.Card, error) {
 	args := m.Called(userID, key)
 	return args.Get(0).([]entities.Card), args.Error(1)
 }

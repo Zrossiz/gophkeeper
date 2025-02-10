@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Zrossiz/gophkeeper/internal/dto"
@@ -21,7 +22,7 @@ func TestNotesStorage_Create(t *testing.T) {
 		TextData: "Test Note Data",
 	}
 
-	err := storage.Create(body)
+	err := storage.Create(context.Background(), body)
 	assert.NoError(t, err, "Create should insert a note without error")
 
 	var count int
@@ -41,14 +42,14 @@ func TestNotesStorage_Update(t *testing.T) {
 		Title:    "Test Title",
 		TextData: "Test Note Data",
 	}
-	err := storage.Create(createBody)
+	err := storage.Create(context.Background(), createBody)
 	assert.NoError(t, err, "Create should insert a note without error")
 
 	updateBody := dto.UpdateNoteDTO{
 		Title:    "Updated Title",
 		TextData: "Updated Note Data",
 	}
-	err = storage.Update(1, updateBody) // Предположим, что ID заметки - 1
+	err = storage.Update(context.Background(), 1, updateBody)
 	assert.NoError(t, err, "Update should update the note without error")
 
 	var updatedNote entities.Note
@@ -73,11 +74,11 @@ func TestNotesStorage_GetAllByUser(t *testing.T) {
 	}
 
 	for _, body := range notesDTOs {
-		err := storage.Create(body)
+		err := storage.Create(context.Background(), body)
 		assert.NoError(t, err, "Create should insert a note without error")
 	}
 
-	notes, err := storage.GetAllByUser(int(userID))
+	notes, err := storage.GetAllByUser(context.Background(), int(userID))
 	assert.NoError(t, err, "GetAllByUser should not return an error")
 	assert.Len(t, notes, len(notesDTOs), "Expected the same number of notes")
 

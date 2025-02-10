@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -18,9 +19,9 @@ type NoteHandler struct {
 }
 
 type NoteService interface {
-	Create(body dto.CreateNoteDTO) error
-	Update(noteID int, body dto.UpdateNoteDTO) error
-	GetAll(userID int, key string) ([]entities.Note, error)
+	Create(ctx context.Context, body dto.CreateNoteDTO) error
+	Update(ctx context.Context, noteID int, body dto.UpdateNoteDTO) error
+	GetAll(ctx context.Context, userID int, key string) ([]entities.Note, error)
 }
 
 func NewNoteHandler(service NoteService, log *zap.Logger) *NoteHandler {
@@ -59,7 +60,7 @@ func (n *NoteHandler) Create(rw http.ResponseWriter, r *http.Request) {
 
 	body.Key = key.Value
 
-	err = n.service.Create(body)
+	err = n.service.Create(r.Context(), body)
 	if err != nil {
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
 		n.log.Sugar().Errorf("create note error: %v", err)
@@ -106,7 +107,7 @@ func (n *NoteHandler) Update(rw http.ResponseWriter, r *http.Request) {
 
 	body.Key = key.Value
 
-	err = n.service.Update(intNoteID, body)
+	err = n.service.Update(r.Context(), intNoteID, body)
 	if err != nil {
 		n.log.Sugar().Errorf("update note id error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -145,7 +146,7 @@ func (n *NoteHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 
 	n.log.Info("url valid")
 
-	items, err := n.service.GetAll(intUserID, key.Value)
+	items, err := n.service.GetAll(r.Context(), intUserID, key.Value)
 	if err != nil {
 		n.log.Sugar().Errorf("get all notes error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -154,5 +155,7 @@ func (n *NoteHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(items)
+	if err := json.NewEncoder(rw).Encode(items); err != nil {
+		http.Error(rw, "failed to encode response", http.StatusInternalServerError)
+	}
 }

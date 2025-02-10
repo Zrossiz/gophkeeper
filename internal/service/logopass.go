@@ -2,6 +2,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Zrossiz/gophkeeper/internal/dto"
@@ -19,11 +20,11 @@ type LogoPassService struct {
 // LogoPassStorage defines an interface for storing, retrieving, and updating encrypted username-password data.
 type LogoPassStorage interface {
 	// CreateLogoPass stores an encrypted username-password entry.
-	CreateLogoPass(body dto.CreateLogoPassDTO) error
+	CreateLogoPass(ctx context.Context, body dto.CreateLogoPassDTO) error
 	// GetAllByUser retrieves all encrypted username-password entries for a given user ID.
-	GetAllByUser(userID int64) ([]entities.LogoPassword, error)
+	GetAllByUser(ctx context.Context, userID int64) ([]entities.LogoPassword, error)
 	// UpdateLogoPass updates an encrypted username-password entry for a given user ID.
-	UpdateLogoPass(userID int64, body dto.UpdateLogoPassDTO) error
+	UpdateLogoPass(ctx context.Context, userID int64, body dto.UpdateLogoPassDTO) error
 }
 
 // NewLogoPassService creates a new instance of LogoPassService with the provided dependencies.
@@ -54,7 +55,7 @@ func NewLogoPassService(
 //
 // Returns:
 //   - An error if encryption or storage fails.
-func (l *LogoPassService) Create(body dto.CreateLogoPassDTO) error {
+func (l *LogoPassService) Create(ctx context.Context, body dto.CreateLogoPassDTO) error {
 	encryptedUsername, err := l.cryptoModule.Encrypt(body.Username, body.Key)
 	if err != nil {
 		return err
@@ -68,7 +69,7 @@ func (l *LogoPassService) Create(body dto.CreateLogoPassDTO) error {
 	body.Username = encryptedUsername
 	body.Password = encryptedPassword
 
-	err = l.logoPassDB.CreateLogoPass(body)
+	err = l.logoPassDB.CreateLogoPass(ctx, body)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func (l *LogoPassService) Create(body dto.CreateLogoPassDTO) error {
 //
 // Returns:
 //   - An error if encryption or update fails.
-func (l *LogoPassService) Update(userID int64, body dto.UpdateLogoPassDTO) error {
+func (l *LogoPassService) Update(ctx context.Context, userID int64, body dto.UpdateLogoPassDTO) error {
 	encryptedUsername, err := l.cryptoModule.Encrypt(body.Username, body.Key)
 	if err != nil {
 		return err
@@ -98,7 +99,7 @@ func (l *LogoPassService) Update(userID int64, body dto.UpdateLogoPassDTO) error
 	body.Username = encryptedUsername
 	body.Password = encryptedPassword
 
-	err = l.logoPassDB.UpdateLogoPass(userID, body)
+	err = l.logoPassDB.UpdateLogoPass(ctx, userID, body)
 	if err != nil {
 		return err
 	}
@@ -114,8 +115,8 @@ func (l *LogoPassService) Update(userID int64, body dto.UpdateLogoPassDTO) error
 //
 // Returns:
 //   - A slice of decrypted entities.LogoPassword or an error if retrieval or decryption fails.
-func (l *LogoPassService) GetAll(userID int64, key string) ([]entities.LogoPassword, error) {
-	items, err := l.logoPassDB.GetAllByUser(userID)
+func (l *LogoPassService) GetAll(ctx context.Context, userID int64, key string) ([]entities.LogoPassword, error) {
+	items, err := l.logoPassDB.GetAllByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

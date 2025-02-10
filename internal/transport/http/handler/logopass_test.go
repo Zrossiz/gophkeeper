@@ -22,17 +22,17 @@ type MockLogoPassService struct {
 	mock.Mock
 }
 
-func (m *MockLogoPassService) Create(body dto.CreateLogoPassDTO) error {
+func (m *MockLogoPassService) Create(ctx context.Context, body dto.CreateLogoPassDTO) error {
 	args := m.Called(body)
 	return args.Error(0)
 }
 
-func (m *MockLogoPassService) Update(userID int64, body dto.UpdateLogoPassDTO) error {
+func (m *MockLogoPassService) Update(ctx context.Context, userID int64, body dto.UpdateLogoPassDTO) error {
 	args := m.Called(userID, body)
 	return args.Error(0)
 }
 
-func (m *MockLogoPassService) GetAll(userID int64, key string) ([]entities.LogoPassword, error) {
+func (m *MockLogoPassService) GetAll(ctx context.Context, userID int64, key string) ([]entities.LogoPassword, error) {
 	args := m.Called(userID, key)
 	return args.Get(0).([]entities.LogoPassword), args.Error(1)
 }

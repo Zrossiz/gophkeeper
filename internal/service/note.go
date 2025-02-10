@@ -5,6 +5,7 @@ import (
 	"github.com/Zrossiz/gophkeeper/internal/dto"
 	"github.com/Zrossiz/gophkeeper/internal/entities"
 	"go.uber.org/zap"
+	"golang.org/x/net/context"
 )
 
 // NoteService handles operations related to encrypted note storage.
@@ -17,11 +18,11 @@ type NoteService struct {
 // NoteStorage defines an interface for storing, retrieving, and updating encrypted notes.
 type NoteStorage interface {
 	// Create stores an encrypted note entry.
-	Create(body dto.CreateNoteDTO) error
+	Create(ctx context.Context, body dto.CreateNoteDTO) error
 	// Update modifies an existing encrypted note.
-	Update(noteID int, body dto.UpdateNoteDTO) error
+	Update(ctx context.Context, noteID int, body dto.UpdateNoteDTO) error
 	// GetAllByUser retrieves all encrypted notes for a given user ID.
-	GetAllByUser(userID int) ([]entities.Note, error)
+	GetAllByUser(ctx context.Context, userID int) ([]entities.Note, error)
 }
 
 // NewNoteService creates a new instance of NoteService with the provided dependencies.
@@ -52,7 +53,7 @@ func NewNoteService(
 //
 // Returns:
 //   - An error if encryption or storage fails.
-func (n *NoteService) Create(body dto.CreateNoteDTO) error {
+func (n *NoteService) Create(ctx context.Context, body dto.CreateNoteDTO) error {
 	encryptedTitle, err := n.cryptoModule.Encrypt(body.Title, body.Key)
 	if err != nil {
 		return err
@@ -66,7 +67,7 @@ func (n *NoteService) Create(body dto.CreateNoteDTO) error {
 	body.Title = encryptedTitle
 	body.TextData = encryptedTextData
 
-	return n.noteDB.Create(body)
+	return n.noteDB.Create(ctx, body)
 }
 
 // Update encrypts and updates an existing note entry.
@@ -77,7 +78,7 @@ func (n *NoteService) Create(body dto.CreateNoteDTO) error {
 //
 // Returns:
 //   - An error if encryption or update fails.
-func (n *NoteService) Update(noteID int, body dto.UpdateNoteDTO) error {
+func (n *NoteService) Update(ctx context.Context, noteID int, body dto.UpdateNoteDTO) error {
 	encryptedTitle, err := n.cryptoModule.Encrypt(body.Title, body.Key)
 	if err != nil {
 		return err
@@ -91,7 +92,7 @@ func (n *NoteService) Update(noteID int, body dto.UpdateNoteDTO) error {
 	body.Title = encryptedTitle
 	body.TextData = encryptedTextData
 
-	return n.noteDB.Update(noteID, body)
+	return n.noteDB.Update(ctx, noteID, body)
 }
 
 // GetAll retrieves and decrypts all notes for a given user.
@@ -102,8 +103,8 @@ func (n *NoteService) Update(noteID int, body dto.UpdateNoteDTO) error {
 //
 // Returns:
 //   - A slice of decrypted entities.Note or an error if retrieval or decryption fails.
-func (n *NoteService) GetAll(userID int, key string) ([]entities.Note, error) {
-	encryptedData, err := n.noteDB.GetAllByUser(userID)
+func (n *NoteService) GetAll(ctx context.Context, userID int, key string) ([]entities.Note, error) {
+	encryptedData, err := n.noteDB.GetAllByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

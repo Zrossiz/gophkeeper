@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -18,9 +19,9 @@ type LogoPassHandler struct {
 }
 
 type LogoPassService interface {
-	Create(body dto.CreateLogoPassDTO) error
-	Update(userID int64, body dto.UpdateLogoPassDTO) error
-	GetAll(userID int64, key string) ([]entities.LogoPassword, error)
+	Create(ctx context.Context, body dto.CreateLogoPassDTO) error
+	Update(ctx context.Context, userID int64, body dto.UpdateLogoPassDTO) error
+	GetAll(ctx context.Context, userID int64, key string) ([]entities.LogoPassword, error)
 }
 
 func NewLogoPassHandler(service LogoPassService, logger *zap.Logger) *LogoPassHandler {
@@ -50,6 +51,8 @@ func (l *LogoPassHandler) Create(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	var body dto.CreateLogoPassDTO
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -59,7 +62,7 @@ func (l *LogoPassHandler) Create(rw http.ResponseWriter, r *http.Request) {
 
 	body.Key = key.Value
 
-	err = l.service.Create(body)
+	err = l.service.Create(ctx, body)
 	if err != nil {
 		l.log.Sugar().Errorf("create logo pass error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -90,6 +93,8 @@ func (l *LogoPassHandler) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	var body dto.UpdateLogoPassDTO
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -106,7 +111,7 @@ func (l *LogoPassHandler) Update(rw http.ResponseWriter, r *http.Request) {
 
 	body.Key = key.Value
 
-	err = l.service.Update(int64(intLogoPassID), body)
+	err = l.service.Update(ctx, int64(intLogoPassID), body)
 	if err != nil {
 		l.log.Sugar().Errorf("update logo pass error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -136,6 +141,8 @@ func (l *LogoPassHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	userID := chi.URLParam(r, "userID")
 	intUserID, err := strconv.Atoi(userID)
 	if err != nil {
@@ -143,7 +150,7 @@ func (l *LogoPassHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	items, err := l.service.GetAll(int64(intUserID), key.Value)
+	items, err := l.service.GetAll(ctx, int64(intUserID), key.Value)
 	if err != nil {
 		l.log.Sugar().Errorf("get all logo pass error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)

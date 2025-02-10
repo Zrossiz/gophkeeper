@@ -101,6 +101,6 @@ func Start() {
 
 	log.Sugar().Infof("Starting server on addr: %v", srv.Addr)
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatal("start web server error", zap.Error(err))
+		log.Error("start web server error", zap.Error(err))
 	}
 }

@@ -78,7 +78,7 @@ func TestBinaryStorage_Create(t *testing.T) {
 		Data:   []byte("test data"),
 	}
 
-	err := storage.Create(body)
+	err := storage.Create(context.Background(), body)
 	assert.NoError(t, err, "Create should insert binary data without error")
 
 	var count int
@@ -98,7 +98,7 @@ func TestBinaryStorage_Update(t *testing.T) {
 		Title:  "test title",
 		Data:   []byte("initial data"),
 	}
-	err := storage.Create(createBody)
+	err := storage.Create(context.Background(), createBody)
 	assert.NoError(t, err, "Create should insert binary data without error")
 
 	updateBody := dto.SetStorageBinaryDTO{
@@ -106,7 +106,7 @@ func TestBinaryStorage_Update(t *testing.T) {
 		Title:  "test title",
 		Data:   []byte("updated data"),
 	}
-	err = storage.Update(updateBody)
+	err = storage.Update(context.Background(), updateBody)
 	assert.NoError(t, err, "Update should update binary data without error")
 
 	var data []byte
@@ -127,11 +127,11 @@ func TestBinaryStorage_GetAllByUser(t *testing.T) {
 		{UserID: int(userID), Title: "title2", Data: []byte("data2")},
 	}
 	for _, body := range bodies {
-		err := storage.Create(body)
+		err := storage.Create(context.Background(), body)
 		assert.NoError(t, err, "Create should insert binary data without error")
 	}
 
-	binaryDataList, err := storage.GetAllByUser(userID)
+	binaryDataList, err := storage.GetAllByUser(context.Background(), userID)
 	assert.NoError(t, err, "GetAllByUser should retrieve binary data without error")
 	assert.Len(t, binaryDataList, len(bodies), "Expected number of binary data records to match")
 

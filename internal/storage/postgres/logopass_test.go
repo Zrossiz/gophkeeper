@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Zrossiz/gophkeeper/internal/dto"
@@ -22,7 +23,7 @@ func TestLogoPassStorage_CreateLogoPass(t *testing.T) {
 		Password: "testpassword",
 	}
 
-	err := storage.CreateLogoPass(body)
+	err := storage.CreateLogoPass(context.Background(), body)
 	assert.NoError(t, err, "CreateLogoPass should not return an error")
 
 	var count int
@@ -44,11 +45,11 @@ func TestLogoPassStorage_GetAllByUser(t *testing.T) {
 	}
 
 	for _, body := range logoPassDTOs {
-		err := storage.CreateLogoPass(body)
+		err := storage.CreateLogoPass(context.Background(), body)
 		assert.NoError(t, err, "CreateLogoPass should not return an error")
 	}
 
-	logoPasses, err := storage.GetAllByUser(userID)
+	logoPasses, err := storage.GetAllByUser(context.Background(), userID)
 	assert.NoError(t, err, "GetAllByUser should not return an error")
 	assert.Len(t, logoPasses, len(logoPassDTOs), "Expected the same number of logo passes")
 
@@ -73,7 +74,7 @@ func TestLogoPassStorage_UpdateLogoPass(t *testing.T) {
 		Password: "testpassword",
 	}
 
-	err := storage.CreateLogoPass(body)
+	err := storage.CreateLogoPass(context.Background(), body)
 	assert.NoError(t, err, "CreateLogoPass should not return an error")
 
 	updateBody := dto.UpdateLogoPassDTO{
@@ -81,7 +82,7 @@ func TestLogoPassStorage_UpdateLogoPass(t *testing.T) {
 		Password: "updatedpassword",
 	}
 
-	err = storage.UpdateLogoPass(1, updateBody) // Предположим, что ID логина - 1
+	err = storage.UpdateLogoPass(context.Background(), 1, updateBody)
 	assert.NoError(t, err, "UpdateLogoPass should not return an error")
 
 	var updatedLogoPass entities.LogoPassword

@@ -2,6 +2,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -33,12 +34,12 @@ func NewBinaryStorage(db *sql.DB) *BinaryStorage {
 //
 // Returns:
 //   - An error if the operation fails.
-func (b *BinaryStorage) Create(body dto.SetStorageBinaryDTO) error {
+func (b *BinaryStorage) Create(ctx context.Context, body dto.SetStorageBinaryDTO) error {
 	query := `
 		INSERT INTO binary_data (user_id, title, binary_data, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5)
 	`
-	_, err := b.db.Exec(query, body.UserID, body.Title, body.Data, time.Now(), time.Now())
+	_, err := b.db.ExecContext(ctx, query, body.UserID, body.Title, body.Data, time.Now(), time.Now())
 	if err != nil {
 		return err
 	}
@@ -52,13 +53,13 @@ func (b *BinaryStorage) Create(body dto.SetStorageBinaryDTO) error {
 //
 // Returns:
 //   - An error if the update operation fails or the record is not found.
-func (b *BinaryStorage) Update(body dto.SetStorageBinaryDTO) error {
+func (b *BinaryStorage) Update(ctx context.Context, body dto.SetStorageBinaryDTO) error {
 	query := `
 		UPDATE binary_data
 		SET binary_data = $1, updated_at = $2
 		WHERE id = $3
 	`
-	result, err := b.db.Exec(query, body.Data, time.Now(), body.UserID)
+	result, err := b.db.ExecContext(ctx, query, body.Data, time.Now(), body.UserID)
 	if err != nil {
 		return err
 	}
@@ -82,13 +83,13 @@ func (b *BinaryStorage) Update(body dto.SetStorageBinaryDTO) error {
 // Returns:
 //   - A slice of BinaryData entities containing the user's stored binary data.
 //   - An error if the retrieval fails.
-func (b *BinaryStorage) GetAllByUser(userID int64) ([]entities.BinaryData, error) {
+func (b *BinaryStorage) GetAllByUser(ctx context.Context, userID int64) ([]entities.BinaryData, error) {
 	query := `
 		SELECT id, user_id, title, binary_data, created_at, updated_at
 		FROM binary_data
 		WHERE user_id = $1
 	`
-	rows, err := b.db.Query(query, userID)
+	rows, err := b.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/Zrossiz/gophkeeper/internal/dto"
 	"github.com/Zrossiz/gophkeeper/internal/entities"
 	"go.uber.org/zap"
@@ -17,9 +19,9 @@ type BinaryService struct {
 // BinaryStorage defines an interface for storing and retrieving encrypted binary data.
 type BinaryStorage interface {
 	// Create stores encrypted binary data.
-	Create(body dto.SetStorageBinaryDTO) error
+	Create(ctx context.Context, body dto.SetStorageBinaryDTO) error
 	// GetAllByUser retrieves all binary data associated with a given user.
-	GetAllByUser(userID int64) ([]entities.BinaryData, error)
+	GetAllByUser(ctx context.Context, userID int64) ([]entities.BinaryData, error)
 }
 
 // NewBinaryService creates a new instance of BinaryService with the provided dependencies.
@@ -50,7 +52,7 @@ func NewBinaryService(
 //
 // Returns:
 //   - An error if encryption or storage fails.
-func (b *BinaryService) Create(body dto.CreateBinaryDTO) error {
+func (b *BinaryService) Create(ctx context.Context, body dto.CreateBinaryDTO) error {
 	encryptedTitle, err := b.cryptoModule.Encrypt(body.Title, body.Key)
 	if err != nil {
 		return err
@@ -66,7 +68,7 @@ func (b *BinaryService) Create(body dto.CreateBinaryDTO) error {
 		Title:  encryptedTitle,
 		Data:   encryptedBody,
 	}
-	return b.binaryStorage.Create(binariesBody)
+	return b.binaryStorage.Create(ctx, binariesBody)
 }
 
 // GetAll retrieves and decrypts all binary data for a given user.
@@ -77,8 +79,8 @@ func (b *BinaryService) Create(body dto.CreateBinaryDTO) error {
 //
 // Returns:
 //   - A slice of decrypted entities.BinaryData or an error if retrieval or decryption fails.
-func (b *BinaryService) GetAll(userID int64, key string) ([]entities.BinaryData, error) {
-	encryptedData, err := b.binaryStorage.GetAllByUser(userID)
+func (b *BinaryService) GetAll(ctx context.Context, userID int64, key string) ([]entities.BinaryData, error) {
+	encryptedData, err := b.binaryStorage.GetAllByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

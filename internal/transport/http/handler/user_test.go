@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -14,12 +15,11 @@ import (
 	"go.uber.org/zap"
 )
 
-// Mock UserService
 type MockUserService struct {
 	mock.Mock
 }
 
-func (m *MockUserService) Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
+func (m *MockUserService) Registration(ctx context.Context, registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
 	args := m.Called(registrationDTO)
 	if jwt, ok := args.Get(0).(*dto.GeneratedJwt); ok {
 		return jwt, args.Error(1)
@@ -27,7 +27,7 @@ func (m *MockUserService) Registration(registrationDTO dto.UserDTO) (*dto.Genera
 	return nil, args.Error(1)
 }
 
-func (m *MockUserService) Login(loginDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
+func (m *MockUserService) Login(ctx context.Context, loginDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
 	args := m.Called(loginDTO)
 	if jwt, ok := args.Get(0).(*dto.GeneratedJwt); ok {
 		return jwt, args.Error(1)

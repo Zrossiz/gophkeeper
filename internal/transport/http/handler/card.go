@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -19,9 +20,9 @@ type CardHandler struct {
 }
 
 type CardService interface {
-	Create(body dto.CreateCardDTO) error
-	Update(cardID int64, body dto.UpdateCardDTO) error
-	GetAll(userID int64, key string) ([]entities.Card, error)
+	Create(ctx context.Context, body dto.CreateCardDTO) error
+	Update(ctx context.Context, cardID int64, body dto.UpdateCardDTO) error
+	GetAll(ctx context.Context, userID int64, key string) ([]entities.Card, error)
 }
 
 func NewCardHandler(service CardService, logger *zap.Logger) *CardHandler {
@@ -49,6 +50,8 @@ func (c *CardHandler) Create(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	var body dto.CreateCardDTO
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -58,7 +61,7 @@ func (c *CardHandler) Create(rw http.ResponseWriter, r *http.Request) {
 	}
 	body.Key = key.Value
 
-	err = c.service.Create(body)
+	err = c.service.Create(ctx, body)
 	if err != nil {
 		c.log.Sugar().Errorf("create card error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -87,6 +90,8 @@ func (c *CardHandler) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	var body dto.UpdateCardDTO
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -102,7 +107,7 @@ func (c *CardHandler) Update(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.service.Update(int64(intCardID), body)
+	err = c.service.Update(ctx, int64(intCardID), body)
 	if err != nil {
 		c.log.Sugar().Errorf("update card error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -130,6 +135,8 @@ func (c *CardHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	userID := chi.URLParam(r, "userID")
 	intUserID, err := strconv.Atoi(userID)
 	if err != nil {
@@ -137,7 +144,7 @@ func (c *CardHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	items, err := c.service.GetAll(int64(intUserID), key.Value)
+	items, err := c.service.GetAll(ctx, int64(intUserID), key.Value)
 	if err != nil {
 		c.log.Sugar().Errorf("get all cards error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -146,5 +153,7 @@ func (c *CardHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(items)
+	if err := json.NewEncoder(rw).Encode(items); err != nil {
+		http.Error(rw, "failed to encode response", http.StatusInternalServerError)
+	}
 }

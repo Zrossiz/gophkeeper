@@ -104,7 +104,7 @@ func TestUserStorage_Create(t *testing.T) {
 		Password: "testpassword",
 	}
 
-	err := storage.Create(user)
+	err := storage.Create(context.Background(), user)
 	assert.NoError(t, err, "Create should insert a user without error")
 
 	var count int
@@ -122,10 +122,10 @@ func TestUserStorage_GetUserByUsername(t *testing.T) {
 		Username: "testuser",
 		Password: "testpassword",
 	}
-	err := storage.Create(createUser)
+	err := storage.Create(context.Background(), createUser)
 	assert.NoError(t, err, "Create should insert a user without error")
 
-	user, err := storage.GetUserByUsername("testuser")
+	user, err := storage.GetUserByUsername(context.Background(), "testuser")
 	assert.NoError(t, err, "GetUserByUsername should return user without error")
 
 	assert.Equal(t, createUser.Username, user.Username, "Username should match")

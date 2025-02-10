@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Zrossiz/gophkeeper/internal/dto"
@@ -14,17 +15,17 @@ type MockNoteStorage struct {
 	mock.Mock
 }
 
-func (m *MockNoteStorage) Create(body dto.CreateNoteDTO) error {
+func (m *MockNoteStorage) Create(ctx context.Context, body dto.CreateNoteDTO) error {
 	args := m.Called(body)
 	return args.Error(0)
 }
 
-func (m *MockNoteStorage) Update(noteID int, body dto.UpdateNoteDTO) error {
+func (m *MockNoteStorage) Update(ctx context.Context, noteID int, body dto.UpdateNoteDTO) error {
 	args := m.Called(noteID, body)
 	return args.Error(0)
 }
 
-func (m *MockNoteStorage) GetAllByUser(userID int) ([]entities.Note, error) {
+func (m *MockNoteStorage) GetAllByUser(ctx context.Context, userID int) ([]entities.Note, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]entities.Note), args.Error(1)
 }
@@ -47,7 +48,7 @@ func TestCreateNote(t *testing.T) {
 
 	mockStorage.On("Create", mock.Anything).Return(nil)
 
-	err := service.Create(noteDTO)
+	err := service.Create(context.Background(), noteDTO)
 
 	assert.NoError(t, err)
 	mockCrypto.AssertExpectations(t)
@@ -74,7 +75,7 @@ func TestUpdateNote(t *testing.T) {
 
 	mockStorage.On("Update", noteID, mock.Anything).Return(nil)
 
-	err := service.Update(noteID, noteDTO)
+	err := service.Update(context.Background(), noteID, noteDTO)
 
 	assert.NoError(t, err)
 	mockCrypto.AssertExpectations(t)
@@ -103,7 +104,7 @@ func TestGetAllNotes_Success(t *testing.T) {
 	mockCrypto.On("Decrypt", "enc_title2", encryptionKey).Return("Title 2", nil)
 	mockCrypto.On("Decrypt", "enc_text2", encryptionKey).Return("Text 2", nil)
 
-	notes, err := service.GetAll(userID, encryptionKey)
+	notes, err := service.GetAll(context.Background(), userID, encryptionKey)
 
 	assert.NoError(t, err)
 	assert.Len(t, notes, 2)
@@ -125,7 +126,7 @@ func TestGetAllNotes_NotFound(t *testing.T) {
 
 	mockStorage.On("GetAllByUser", 1).Return([]entities.Note{}, nil)
 
-	notes, err := service.GetAll(1, "secret")
+	notes, err := service.GetAll(context.Background(), 1, "secret")
 
 	assert.NoError(t, err)
 	assert.Empty(t, notes)

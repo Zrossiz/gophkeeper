@@ -2,6 +2,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Zrossiz/gophkeeper/internal/dto"
@@ -19,11 +20,11 @@ type CardService struct {
 // CardStorage defines an interface for storing, retrieving, and updating encrypted card data.
 type CardStorage interface {
 	// CreateCard stores an encrypted card in the database.
-	CreateCard(body dto.CreateCardDTO) error
+	CreateCard(ctx context.Context, body dto.CreateCardDTO) error
 	// GetAllCardsByUserId retrieves all encrypted cards associated with a given user ID.
-	GetAllCardsByUserId(userID int64) ([]entities.Card, error)
+	GetAllCardsByUserId(ctx context.Context, userID int64) ([]entities.Card, error)
 	// UpdateCard updates the encrypted card details for a specific card ID.
-	UpdateCard(cardID int64, body dto.UpdateCardDTO) error
+	UpdateCard(ctx context.Context, cardID int64, body dto.UpdateCardDTO) error
 }
 
 // NewCardService creates a new instance of CardService with the provided dependencies.
@@ -54,7 +55,7 @@ func NewCardService(
 //
 // Returns:
 //   - An error if encryption or storage fails.
-func (c *CardService) Create(body dto.CreateCardDTO) error {
+func (c *CardService) Create(ctx context.Context, body dto.CreateCardDTO) error {
 	encryptedNum, err := c.cryptoModule.Encrypt(body.Num, body.Key)
 	if err != nil {
 		return err
@@ -80,7 +81,7 @@ func (c *CardService) Create(body dto.CreateCardDTO) error {
 	body.ExpDate = encryptedExpDate
 	body.CardHolderName = encryptedCardHolderName
 
-	return c.cardStorage.CreateCard(body)
+	return c.cardStorage.CreateCard(ctx, body)
 }
 
 // Update encrypts updated card data and stores it securely.
@@ -91,7 +92,7 @@ func (c *CardService) Create(body dto.CreateCardDTO) error {
 //
 // Returns:
 //   - An error if encryption or storage fails.
-func (c *CardService) Update(cardID int64, body dto.UpdateCardDTO) error {
+func (c *CardService) Update(ctx context.Context, cardID int64, body dto.UpdateCardDTO) error {
 	encryptedNum, err := c.cryptoModule.Encrypt(body.Num, body.Key)
 	if err != nil {
 		return err
@@ -117,7 +118,7 @@ func (c *CardService) Update(cardID int64, body dto.UpdateCardDTO) error {
 	body.ExpDate = encryptedExpDate
 	body.CardHolderName = encryptedCardHolderName
 
-	return c.cardStorage.UpdateCard(cardID, body)
+	return c.cardStorage.UpdateCard(ctx, cardID, body)
 }
 
 // GetAll retrieves and decrypts all card data for a given user.
@@ -128,8 +129,8 @@ func (c *CardService) Update(cardID int64, body dto.UpdateCardDTO) error {
 //
 // Returns:
 //   - A slice of decrypted entities.Card or an error if retrieval or decryption fails.
-func (c *CardService) GetAll(userID int64, key string) ([]entities.Card, error) {
-	encryptedData, err := c.cardStorage.GetAllCardsByUserId(userID)
+func (c *CardService) GetAll(ctx context.Context, userID int64, key string) ([]entities.Card, error) {
+	encryptedData, err := c.cardStorage.GetAllCardsByUserId(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

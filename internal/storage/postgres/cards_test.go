@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Zrossiz/gophkeeper/internal/dto"
@@ -24,7 +25,7 @@ func TestCardStorage_CreateCard(t *testing.T) {
 		CardHolderName: "Test User",
 	}
 
-	err := storage.CreateCard(cardDTO)
+	err := storage.CreateCard(context.Background(), cardDTO)
 	assert.NoError(t, err, "CreateCard should not return an error")
 
 	var count int
@@ -48,10 +49,10 @@ func TestCardStorage_GetAllCardsByUserId(t *testing.T) {
 		CardHolderName: "Test User",
 	}
 
-	err := storage.CreateCard(cardDTO)
+	err := storage.CreateCard(context.Background(), cardDTO)
 	assert.NoError(t, err, "CreateCard should not return an error")
 
-	cards, err := storage.GetAllCardsByUserId(int64(cardDTO.UserID))
+	cards, err := storage.GetAllCardsByUserId(context.Background(), int64(cardDTO.UserID))
 	assert.NoError(t, err, "GetAllCardsByUserId should not return an error")
 	assert.Len(t, cards, 1, "Expected one card for the user")
 
@@ -76,7 +77,7 @@ func TestCardStorage_UpdateCard(t *testing.T) {
 		CardHolderName: "Test User",
 	}
 
-	err := storage.CreateCard(cardDTO)
+	err := storage.CreateCard(context.Background(), cardDTO)
 	assert.NoError(t, err, "CreateCard should not return an error")
 
 	updatedCardDTO := dto.UpdateCardDTO{
@@ -86,7 +87,7 @@ func TestCardStorage_UpdateCard(t *testing.T) {
 		CardHolderName: "Updated User",
 	}
 
-	err = storage.UpdateCard(1, updatedCardDTO)
+	err = storage.UpdateCard(context.Background(), 1, updatedCardDTO)
 	assert.NoError(t, err, "UpdateCard should not return an error")
 
 	var updatedCard entities.Card

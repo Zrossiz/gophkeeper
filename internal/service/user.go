@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/Zrossiz/gophkeeper/internal/apperrors"
@@ -23,9 +24,9 @@ type UserService struct {
 // UserStorage defines database operations related to user management.
 type UserStorage interface {
 	// Create saves a new user record in the database.
-	Create(body dto.UserDTO) error
+	Create(ctx context.Context, body dto.UserDTO) error
 	// GetUserByUsername retrieves a user by their username.
-	GetUserByUsername(username string) (*entities.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*entities.User, error)
 }
 
 // NewUserService initializes and returns a new UserService instance.
@@ -60,20 +61,20 @@ func NewUserService(
 // Returns:
 //   - A pointer to GeneratedJwt struct containing access and refresh tokens.
 //   - An error if user creation fails or token generation fails.
-func (u *UserService) Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
+func (u *UserService) Registration(ctx context.Context, registrationDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
 	hashedPassword, err := hashPassword(registrationDTO.Password, u.cfg.Cost)
 	if err != nil {
 		return nil, apperrors.ErrHashPassword
 	}
 	registrationDTO.Password = hashedPassword
 
-	err = u.dbUser.Create(registrationDTO)
+	err = u.dbUser.Create(ctx, registrationDTO)
 	if err != nil {
 		u.log.Error(err.Error())
 		return nil, apperrors.ErrDBQuery
 	}
 
-	createdUser, err := u.dbUser.GetUserByUsername(registrationDTO.Username)
+	createdUser, err := u.dbUser.GetUserByUsername(ctx, registrationDTO.Username)
 	if err != nil {
 		u.log.Error(err.Error())
 		return nil, apperrors.ErrDBQuery
@@ -122,8 +123,8 @@ func (u *UserService) Registration(registrationDTO dto.UserDTO) (*dto.GeneratedJ
 // Returns:
 //   - A pointer to GeneratedJwt struct containing access and refresh tokens.
 //   - An error if authentication fails.
-func (u *UserService) Login(loginDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
-	curUser, err := u.dbUser.GetUserByUsername(loginDTO.Username)
+func (u *UserService) Login(ctx context.Context, loginDTO dto.UserDTO) (*dto.GeneratedJwt, error) {
+	curUser, err := u.dbUser.GetUserByUsername(ctx, loginDTO.Username)
 	if err != nil {
 		u.log.Error(err.Error())
 		return nil, apperrors.ErrDBQuery

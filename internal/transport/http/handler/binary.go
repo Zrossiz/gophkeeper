@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,8 +21,8 @@ type BinaryHandler struct {
 }
 
 type BinaryService interface {
-	Create(body dto.CreateBinaryDTO) error
-	GetAll(userID int64, key string) ([]entities.BinaryData, error)
+	Create(ctx context.Context, body dto.CreateBinaryDTO) error
+	GetAll(ctx context.Context, userID int64, key string) ([]entities.BinaryData, error)
 }
 
 func NewBinaryHandler(service BinaryService, logger *zap.Logger) *BinaryHandler {
@@ -46,6 +47,7 @@ func NewBinaryHandler(service BinaryService, logger *zap.Logger) *BinaryHandler 
 // @Router /binary/ [post]
 // @Security BearerAuth
 func (b *BinaryHandler) Create(rw http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(rw, "File too large or invalid request", http.StatusBadRequest)
@@ -84,7 +86,7 @@ func (b *BinaryHandler) Create(rw http.ResponseWriter, r *http.Request) {
 		Key:    key.Value,
 	}
 
-	err = b.service.Create(body)
+	err = b.service.Create(ctx, body)
 	if err != nil {
 		b.log.Sugar().Errorf("create binary error: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -116,13 +118,15 @@ func (b *BinaryHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	key, err := r.Cookie("key")
 	if err != nil {
 		http.Error(rw, "key not found", http.StatusBadRequest)
 		return
 	}
 
-	items, err := b.service.GetAll(int64(intUserID), key.Value)
+	items, err := b.service.GetAll(ctx, int64(intUserID), key.Value)
 	if err != nil {
 		b.log.Sugar().Errorf("error get all binaries: %v", err)
 		http.Error(rw, apperrors.ErrInternalServer, http.StatusInternalServerError)
@@ -131,5 +135,7 @@ func (b *BinaryHandler) GetAll(rw http.ResponseWriter, r *http.Request) {
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(items)
+	if err := json.NewEncoder(rw).Encode(items); err != nil {
+		http.Error(rw, "failed to encode response", http.StatusInternalServerError)
+	}
 }

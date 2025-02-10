@@ -2,6 +2,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -32,10 +33,10 @@ func NewNotesStorage(db *sql.DB) *NotesStorage {
 //
 // Returns:
 //   - error: an error if the insertion fails, otherwise nil.
-func (n *NotesStorage) Create(body dto.CreateNoteDTO) error {
+func (n *NotesStorage) Create(ctx context.Context, body dto.CreateNoteDTO) error {
 	query := `INSERT INTO notes (user_id, title, text_data) VALUES ($1, $2, $3)`
 
-	_, err := n.db.Exec(query, body.UserID, body.Title, body.TextData)
+	_, err := n.db.ExecContext(ctx, query, body.UserID, body.Title, body.TextData)
 	if err != nil {
 		return fmt.Errorf("failed to create note: %w", err)
 	}
@@ -51,10 +52,10 @@ func (n *NotesStorage) Create(body dto.CreateNoteDTO) error {
 //
 // Returns:
 //   - error: an error if the update fails, otherwise nil.
-func (n *NotesStorage) Update(noteID int, body dto.UpdateNoteDTO) error {
+func (n *NotesStorage) Update(ctx context.Context, noteID int, body dto.UpdateNoteDTO) error {
 	query := `UPDATE notes SET title = $1, text_data = $2, updated_at = NOW() WHERE id = $3`
 
-	_, err := n.db.Exec(query, body.Title, body.TextData, noteID)
+	_, err := n.db.ExecContext(ctx, query, body.Title, body.TextData, noteID)
 	if err != nil {
 		return fmt.Errorf("failed to update note: %w", err)
 	}
@@ -70,10 +71,10 @@ func (n *NotesStorage) Update(noteID int, body dto.UpdateNoteDTO) error {
 // Returns:
 //   - []entities.Note: a slice of Note entities.
 //   - error: an error if the retrieval fails, otherwise nil.
-func (n *NotesStorage) GetAllByUser(userID int) ([]entities.Note, error) {
+func (n *NotesStorage) GetAllByUser(ctx context.Context, userID int) ([]entities.Note, error) {
 	query := `SELECT id, user_id, title, text_data, created_at, updated_at FROM notes WHERE user_id = $1`
 
-	rows, err := n.db.Query(query, userID)
+	rows, err := n.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all notes: %w", err)
 	}
